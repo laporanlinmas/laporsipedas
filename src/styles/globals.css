@@ -427,14 +427,43 @@ svg {
   max-width: 100%;
 }
 
-.landing-heading {
-  color: var(--tone-orange);
-  font-size: 1.25rem;
-  font-weight: 650;
-  line-height: 1.3;
-  letter-spacing: 0;
-  margin-bottom: 12px;
+.landing-program {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 auto 12px;
   text-align: center;
+}
+
+.landing-heading {
+  position: relative;
+  z-index: 1;
+  color: var(--text);
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.landing-region {
+  position: relative;
+  z-index: 2;
+  margin-top: -0.2rem;
+  color: var(--tone-orange);
+  font-family: var(--font-script), cursive;
+  font-size: 2rem;
+  font-weight: 400;
+  line-height: 1.2;
+  transform: rotate(-1deg);
+  text-shadow:
+    1px 1px 3px rgba(0, 0, 0, 0.7),
+    -1px -1px 0 rgba(15, 23, 42, 0.7),
+    1px -1px 0 rgba(15, 23, 42, 0.7),
+    -1px 1px 0 rgba(15, 23, 42, 0.7),
+    1px 1px 0 rgba(15, 23, 42, 0.7);
+  white-space: nowrap;
 }
 
 .landing-grid {

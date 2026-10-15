@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { Bebas_Neue, Great_Vibes, Inter } from 'next/font/google';
 import '@/styles/globals.css';
 import { APP_NAME, APP_TAGLINE } from '@/lib/constants';
 
@@ -7,6 +7,20 @@ const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-sans',
+});
+
+const bebasNeue = Bebas_Neue({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-display',
+  weight: '400',
+});
+
+const greatVibes = Great_Vibes({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-script',
+  weight: '400',
 });
 
 export const viewport: Viewport = {
@@ -84,7 +98,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className={inter.variable}>
+      <body className={`${inter.variable} ${bebasNeue.variable} ${greatVibes.variable}`}>
         {children}
       </body>
     </html>
