@@ -11,9 +11,7 @@ export const metadata: Metadata = {
 export default function PedestrianPage() {
   return (
     <AppProvider scope={PEDESTRIAN_CATEGORY.slug}>
-      <div className="page-transition">
-        <PedestrianReportPage />
-      </div>
+      <PedestrianReportPage />
     </AppProvider>
   );
 }

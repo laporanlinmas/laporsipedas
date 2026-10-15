@@ -6,9 +6,5 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
-  return (
-    <div className="page-transition">
-      <CategoryLanding />
-    </div>
-  );
+  return <CategoryLanding />;
 }

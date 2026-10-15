@@ -20,9 +20,5 @@ export default function CategoryPage({ params }: { params: { category: string } 
   const category = getCategoryBySlug(params.category);
   if (!category || category.flow !== 'structured') notFound();
 
-  return (
-    <div className="page-transition">
-      <StructuredCategoryClient slug={category.slug} />
-    </div>
-  );
+  return <StructuredCategoryClient slug={category.slug} />;
 }

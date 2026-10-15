@@ -25,7 +25,7 @@ export default function CctvPage() {
   }, [src]);
 
   return (
-    <main className="viewer page-transition">
+    <main className="viewer">
       <div className="viewer-bar">
         <Link className="back-link solid" href="/pedestrian">
           <Icon name="arrowLeft" /> Kembali

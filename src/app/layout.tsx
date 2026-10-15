@@ -76,16 +76,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                function addHydrated() {
-                  if (document.body) {
-                    document.body.classList.add('hydrated');
-                  }
-                }
-                if (document.body) {
-                  addHydrated();
-                } else {
-                  document.addEventListener('DOMContentLoaded', addHydrated);
-                }
                 if ('serviceWorker' in navigator) {
                   window.addEventListener('load', function() {
                     navigator.serviceWorker.register('/sw.js').catch(function(err) {
