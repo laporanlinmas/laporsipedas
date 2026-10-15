@@ -123,7 +123,7 @@ export default function StructuredForm({ className = '' }: { className?: string 
               </span>
               <button
                 type="button"
-                className="geo-btn geo-btn--high"
+                className="geo-btn"
                 onClick={onLocate}
                 disabled={busy}
                 title="Ambil koordinat GPS akurat dari perangkat"

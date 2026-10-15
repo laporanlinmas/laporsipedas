@@ -1,6 +1,6 @@
 'use client';
 
-import { CalendarDays, ChevronLeft, ChevronRight, Crosshair, X } from 'lucide-react';
+import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight, Crosshair, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { MONTHS_LONG, toDateInputValue } from '@/lib/format';
 
@@ -31,6 +31,7 @@ export default function DatePicker({
 }) {
   const today = useMemo(() => new Date(), []);
   const [open, setOpen] = useState(false);
+  const [activePicker, setActivePicker] = useState<'month' | 'year' | null>(null);
   const [view, setView] = useState(() => startOfMonth(value, today));
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -40,25 +41,31 @@ export default function DatePicker({
 
   useEffect(() => {
     if (!open) return;
-    const onPointer = (event: MouseEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    const onPointer = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+        setActivePicker(null);
+      }
     };
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false);
+      if (event.key === 'Escape') {
+        if (activePicker) setActivePicker(null);
+        else setOpen(false);
+      }
     };
-    document.addEventListener('mousedown', onPointer);
+    document.addEventListener('pointerdown', onPointer);
     document.addEventListener('keydown', onKey);
     return () => {
-      document.removeEventListener('mousedown', onPointer);
+      document.removeEventListener('pointerdown', onPointer);
       document.removeEventListener('keydown', onKey);
     };
-  }, [open]);
+  }, [open, activePicker]);
 
   const year = view.getFullYear();
   const month = view.getMonth();
   const todayValue = toDateInputValue(today);
   const minYear = today.getFullYear() - (YEAR_WINDOW - 1);
-  const years = Array.from({ length: YEAR_WINDOW }, (_, index) => String(today.getFullYear() - index));
+  const years = Array.from({ length: YEAR_WINDOW }, (_, index) => today.getFullYear() - index);
 
   const cells = useMemo(() => {
     const leading = (new Date(year, month, 1).getDay() + 6) % 7;
@@ -70,6 +77,7 @@ export default function DatePicker({
 
   const pick = (day: number) => {
     onChange(iso(year, month, day));
+    setActivePicker(null);
     setOpen(false);
   };
 
@@ -82,7 +90,10 @@ export default function DatePicker({
       <button
         type="button"
         className={`date-trigger${value ? ' has-value' : ''}`}
-        onClick={() => setOpen(current => !current)}
+        onClick={() => {
+          setOpen(current => !current);
+          setActivePicker(null);
+        }}
         aria-expanded={open}
         aria-haspopup="dialog"
       >
@@ -126,45 +137,55 @@ export default function DatePicker({
               <small>Pilih tanggal</small>
               <strong>{value ? formatLabel(value) : 'Laporan lapangan'}</strong>
             </span>
-            <button type="button" onClick={() => setOpen(false)} aria-label="Tutup kalender">
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                setActivePicker(null);
+              }}
+              aria-label="Tutup kalender"
+            >
               <X aria-hidden="true" />
             </button>
           </div>
 
           <div className="date-period">
-            <select
-              className="mini-select"
+            <DateChoice
+              id="date-month-options"
+              label="Pilih bulan"
               value={month}
-              onChange={event => setView(new Date(year, Number(event.target.value), 1))}
-              aria-label="Pilih bulan"
-            >
-              {MONTHS_LONG.map((name, index) => (
-                <option key={name} value={index}>
-                  {name}
-                </option>
-              ))}
-            </select>
+              options={MONTHS_LONG.map((name, index) => ({ label: name, value: index }))}
+              open={activePicker === 'month'}
+              onToggle={() => setActivePicker(current => (current === 'month' ? null : 'month'))}
+              onChange={selectedMonth => {
+                setView(new Date(year, selectedMonth, 1));
+                setActivePicker(null);
+              }}
+            />
             <button
               type="button"
               className="date-step"
               disabled={year === minYear && month === 0}
-              onClick={() => setView(new Date(year, month - 1, 1))}
+              onClick={() => {
+                setActivePicker(null);
+                setView(new Date(year, month - 1, 1));
+              }}
               aria-label="Bulan sebelumnya"
             >
               <ChevronLeft aria-hidden="true" />
             </button>
-            <select
-              className="mini-select"
+            <DateChoice
+              id="date-year-options"
+              label="Pilih tahun"
               value={year}
-              onChange={event => setView(new Date(Number(event.target.value), month, 1))}
-              aria-label="Pilih tahun"
-            >
-              {years.map(option => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
+              options={years.map(option => ({ label: String(option), value: option }))}
+              open={activePicker === 'year'}
+              onToggle={() => setActivePicker(current => (current === 'year' ? null : 'year'))}
+              onChange={selectedYear => {
+                setView(new Date(selectedYear, month, 1));
+                setActivePicker(null);
+              }}
+            />
           </div>
 
           <div className="date-grid dow">
@@ -198,12 +219,72 @@ export default function DatePicker({
               onClick={() => {
                 onChange(todayValue);
                 setView(startOfMonth(todayValue, today));
+                setActivePicker(null);
                 setOpen(false);
               }}
             >
               <Crosshair aria-hidden="true" /> Hari ini
             </button>
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DateChoice({
+  id,
+  label,
+  value,
+  options,
+  open,
+  onToggle,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: number;
+  options: Array<{ label: string; value: number }>;
+  open: boolean;
+  onToggle: () => void;
+  onChange: (value: number) => void;
+}) {
+  const selected = options.find(option => option.value === value);
+  const selectedRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (open) selectedRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [open, value]);
+
+  return (
+    <div className="date-choice">
+      <button
+        type="button"
+        className={`date-choice-trigger${open ? ' open' : ''}`}
+        aria-label={label}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={id}
+        onClick={onToggle}
+      >
+        <span>{selected?.label}</span>
+        <ChevronDown aria-hidden="true" />
+      </button>
+      {open && (
+        <div className="date-choice-menu" id={id} role="listbox" aria-label={label}>
+          {options.map(option => (
+            <button
+              key={option.value}
+              type="button"
+              role="option"
+              aria-selected={option.value === value}
+              className={option.value === value ? 'selected' : ''}
+              ref={option.value === value ? selectedRef : undefined}
+              onClick={() => onChange(option.value)}
+            >
+              {option.label}
+            </button>
+          ))}
         </div>
       )}
     </div>
