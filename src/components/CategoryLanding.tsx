@@ -54,11 +54,7 @@ export default function CategoryLanding() {
             <p className="landing-subtitle">{APP_TAGLINE.toUpperCase()}</p>
           </div>
         </div>
-        <p className="landing-kicker">{APP_TAGLINE}</p>
-        <h2 className="landing-heading">Pilih jenis laporan</h2>
-        <p className="landing-intro">
-          Pilih Program Satgas Linmas di bawah ini untuk mulai membuat laporan.
-        </p>
+        <h2 className="landing-heading">PROGRAM SATGAS LINMAS</h2>
       </div>
 
       <ul className="landing-grid">

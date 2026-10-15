@@ -8,7 +8,7 @@ import type { CategoryDef } from '@/lib/constants';
 export default function CategoryCard({ category }: { category: CategoryDef }) {
   return (
     <Link
-      className={`landing-card tone-${category.tone}`}
+      className={`landing-card landing-tone-${category.tone}`}
       href={category.href}
       data-flow={category.flow}
     >

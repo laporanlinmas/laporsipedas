@@ -339,7 +339,6 @@ svg {
 .landing-hero {
   position: relative;
   z-index: 1;
-  max-width: 720px;
   margin-bottom: clamp(28px, 4.5vw, 44px);
 }
 
@@ -428,28 +427,13 @@ svg {
   max-width: 100%;
 }
 
-.landing-kicker {
-  margin-bottom: 8px;
-  color: var(--gold);
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-}
-
 .landing-heading {
   font-size: clamp(1.8rem, 5vw, 2.8rem);
   font-weight: 800;
   line-height: 1.05;
-  letter-spacing: -0.03em;
+  letter-spacing: 0;
   margin-bottom: 12px;
-}
-
-.landing-intro {
-  max-width: 56ch;
-  color: var(--muted);
-  font-size: 0.95rem;
-  line-height: 1.65;
+  text-align: center;
 }
 
 .landing-grid {
@@ -479,10 +463,14 @@ svg {
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  background: linear-gradient(150deg, var(--card) 0%, var(--card-2) 100%);
+  background: var(--card);
   box-shadow: var(--shadow-card);
   text-align: left;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .landing-card::after {
@@ -514,12 +502,12 @@ svg {
   transform: scale(1);
 }
 
-.landing-card.tone-teal { --accent: var(--tone-teal); }
-.landing-card.tone-amber { --accent: var(--tone-amber); }
-.landing-card.tone-rose { --accent: var(--tone-rose); }
-.landing-card.tone-orange { --accent: var(--tone-orange); }
-.landing-card.tone-blue { --accent: var(--tone-blue); }
-.landing-card.tone-violet { --accent: var(--tone-violet); }
+.landing-card.landing-tone-teal { --accent: var(--tone-teal); }
+.landing-card.landing-tone-amber { --accent: var(--tone-amber); }
+.landing-card.landing-tone-rose { --accent: var(--tone-rose); }
+.landing-card.landing-tone-orange { --accent: var(--tone-orange); }
+.landing-card.landing-tone-blue { --accent: var(--tone-blue); }
+.landing-card.landing-tone-violet { --accent: var(--tone-violet); }
 
 /* Ilustrasi kategori (WebP transparan) — tetap dengan warna aksen kartu. */
 .landing-ico {
@@ -1740,8 +1728,8 @@ svg {
 
 .photo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
-  gap: 9px;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 10px;
 }
 
 .photo-empty {
@@ -3359,7 +3347,7 @@ svg {
   }
 
   .photo-grid {
-    grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .date-panel {
@@ -3428,7 +3416,6 @@ svg {
 /* Transisi halus — hanya properti yang benar-benar berubah.
    `transition: all` dihindari karena memaksa browser memeriksa tiap
    properti pada tiap frame — mahal di perangkat low-end. */
-.landing-card,
 .btn-submit,
 .btn-reset,
 .back-link,
@@ -3475,8 +3462,7 @@ html.light-mode .landing-ornament {
 }
 
 html.light-mode .landing-card {
-  background: linear-gradient(150deg, #ffffff 0%, #f8fafd 100%);
-  border: 1.5px solid rgba(16, 26, 46, 0.12);
+  border-color: rgba(16, 26, 46, 0.12);
   box-shadow: 0 4px 16px rgba(20, 40, 80, 0.06);
 }
 
