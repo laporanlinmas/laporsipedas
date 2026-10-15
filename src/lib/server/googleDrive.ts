@@ -1,5 +1,5 @@
 import { Readable } from 'stream';
-import { getDrive, getMainFolderId } from './googleAuth';
+import { getMainFolderId, withDriveFallback } from './googleAuth';
 
 export { formatDateFolder, formatMonthFolder, mimeToExt } from '../pedestrianParser';
 
@@ -21,11 +21,13 @@ const folderPending = new Map<string, Promise<string>>();
 /** Beri akses publik agar hasil bisa dipratinjau tanpa login. */
 async function shareReader(fileId: string): Promise<void> {
   try {
-    await getDrive().permissions.create({
-      fileId,
-      supportsAllDrives: true,
-      resource: { role: 'reader', type: 'anyone' },
-    } as never);
+    await withDriveFallback(drive =>
+      drive.permissions.create({
+        fileId,
+        supportsAllDrives: true,
+        resource: { role: 'reader', type: 'anyone' },
+      } as never),
+    );
   } catch (error) {
     console.warn('[drive] gagal memberi akses reader', fileId, (error as Error).message);
   }
@@ -35,22 +37,26 @@ async function shareDeveloper(fileId: string): Promise<void> {
   const email = getDeveloperEmail();
   if (!email) return;
   try {
-    await getDrive().permissions.create({
-      fileId,
-      supportsAllDrives: true,
-      resource: { role: 'writer', type: 'user', emailAddress: email },
-    } as never);
+    await withDriveFallback(drive =>
+      drive.permissions.create({
+        fileId,
+        supportsAllDrives: true,
+        resource: { role: 'writer', type: 'user', emailAddress: email },
+      } as never),
+    );
   } catch (error) {
     console.warn('[drive] gagal berbagi folder ke developer', (error as Error).message);
   }
 }
 
 async function createSharedFolder(parentId: string, name: string): Promise<string> {
-  const folder = await getDrive().files.create({
-    supportsAllDrives: true,
-    resource: { name, mimeType: FOLDER_MIME, parents: [parentId] },
-    fields: 'id',
-  } as never);
+  const folder = await withDriveFallback(drive =>
+    drive.files.create({
+      supportsAllDrives: true,
+      resource: { name, mimeType: FOLDER_MIME, parents: [parentId] },
+      fields: 'id',
+    } as never),
+  );
 
   const folderId = folder.data.id!;
   await shareReader(folderId);
@@ -72,14 +78,16 @@ export function getOrCreateFolder(parentId: string, name: string): Promise<strin
 
   const task = (async () => {
     const escaped = name.replace(/'/g, "\\'");
-    const listed = await getDrive().files.list({
-      q: `'${parentId}' in parents and name = '${escaped}' and mimeType = '${FOLDER_MIME}' and trashed = false`,
-      fields: 'files(id)',
-      spaces: 'drive',
-      supportsAllDrives: true,
-      includeItemsFromAllDrives: true,
-      pageSize: 1,
-    } as never);
+    const listed = await withDriveFallback(drive =>
+      drive.files.list({
+        q: `'${parentId}' in parents and name = '${escaped}' and mimeType = '${FOLDER_MIME}' and trashed = false`,
+        fields: 'files(id)',
+        spaces: 'drive',
+        supportsAllDrives: true,
+        includeItemsFromAllDrives: true,
+        pageSize: 1,
+      } as never),
+    );
 
     const found = listed.data.files?.[0]?.id;
     if (found) {
@@ -224,12 +232,14 @@ async function uploadViaDriveApi(options: UploadOptions): Promise<UploadResult> 
 
   let fileId: string;
   try {
-    const file = await getDrive().files.create({
-      supportsAllDrives: true,
-      resource: { name: options.fileName, parents: [dateId] },
-      media: { mimeType: options.mime || 'image/jpeg', body: Readable.from(buffer) },
-      fields: 'id',
-    } as never);
+    const file = await withDriveFallback(drive =>
+      drive.files.create({
+        supportsAllDrives: true,
+        resource: { name: options.fileName, parents: [dateId] },
+        media: { mimeType: options.mime || 'image/jpeg', body: Readable.from(buffer) },
+        fields: 'id',
+      } as never),
+    );
     fileId = file.data.id!;
   } catch (error) {
     describeDriveAuthError(error);

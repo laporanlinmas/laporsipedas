@@ -23,7 +23,7 @@ export const MAP_PICK_ZOOM = 18;
 export const GPS_MAX_ACCURACY_M = 100;
 
 export const DEVELOPER_NAME = 'Ahmad Abdul Basith, S.Tr.I.P';
-export const DEVELOPER_ROLE = 'Developer & Author SI-PEDAS';
+export const DEVELOPER_ROLE = 'Pengembang';
 export const DEVELOPER_PHOTO = '/assets/basith.jpeg';
 
 /** Nama utama yang dicetak sebagai judul watermark foto, untuk semua kategori. */

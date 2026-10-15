@@ -16,7 +16,7 @@ import { useApp } from '../core/AppContext';
 
 /** Halaman laporan pedestrian: tempel teks + foto → Google Drive + Spreadsheet. */
 export default function PedestrianReportPage() {
-  const { category, activeDraftId, isProcessing, photoCount } = useApp();
+  const { activeDraftId, isProcessing, photoCount } = useApp();
   const buildContext = usePedestrianWatermarkContext();
   const drafts = useDraftManager();
   const { submit, busy } = usePedestrianSubmit();
@@ -30,7 +30,6 @@ export default function PedestrianReportPage() {
           <Link className="back-link" href="/">
             <Icon name="arrowLeft" /> Menu kategori
           </Link>
-          <span className="page-title">{category.name}</span>
         </div>
 
         <div className="form-grid">

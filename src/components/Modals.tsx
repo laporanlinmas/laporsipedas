@@ -166,9 +166,7 @@ function LightboxViewer() {
   if (!photo?.data || photo.processing) return null;
 
   const info: string[] = [formatSizeKB(photo.sizeKB)];
-  if (photo.compressed) info.push('dikompres');
   if (photo.exif?.gps) info.push('GPS + QR');
-  if (photo.source === 'camera' ? settings.wmCam : settings.wmGal) info.push('watermark');
   if (photo.fromDraft) info.push('dari draft');
 
   const downloadName = `SIPEDAS_Foto${viewerIdx + 1}_${stampCompact()}.jpg`;

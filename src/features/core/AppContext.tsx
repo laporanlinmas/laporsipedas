@@ -88,9 +88,6 @@ export interface AppContextValue {
   /* UI */
   ready: boolean;
   online: boolean;
-  showSettings: boolean;
-  setShowSettings: (show: boolean) => void;
-
   alertConfig: AlertConfig | null;
   showAlert: (type: AlertConfig['type'], title: string, message: string) => void;
   closeAlert: () => void;
@@ -123,6 +120,10 @@ export interface AppContextValue {
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
+const SettingsVisibilityContext = createContext<{
+  showSettings: boolean;
+  setShowSettings: (show: boolean) => void;
+} | null>(null);
 
 function readSettings(): AppSettings {
   if (typeof window === 'undefined') return defaultSettings;
@@ -509,8 +510,6 @@ export function AppProvider({
       setActiveDraftId,
       ready,
       online,
-      showSettings,
-      setShowSettings,
       alertConfig,
       showAlert,
       closeAlert,
@@ -538,11 +537,15 @@ export function AppProvider({
       location, updateLocation, coords, updateCoords, reportText, setReportText,
       photos, addPhotos, patchPhoto, removePhoto, reorderPhotos,
       activeDraftId, setActiveDraftId, ready,
-      online, showSettings, alertConfig, showAlert, closeAlert, confirmConfig, showConfirm,
+      online, alertConfig, showAlert, closeAlert, confirmConfig, showConfirm,
       closeConfirm, viewerIdx, openViewer, closeViewer, navigateViewer, mapModal,
       openMapModal, closeMapModal, mapPickerOpen, openMapPicker, closeMapPicker,
       loading, startLoading, setProgress, stopLoading, resetReport,
     ],
+  );
+  const settingsVisibility = useMemo(
+    () => ({ showSettings, setShowSettings }),
+    [showSettings],
   );
 
   useEffect(() => {
@@ -551,12 +554,22 @@ export function AppProvider({
     };
   }, []);
 
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+  return (
+    <SettingsVisibilityContext.Provider value={settingsVisibility}>
+      <AppContext.Provider value={value}>{children}</AppContext.Provider>
+    </SettingsVisibilityContext.Provider>
+  );
 }
 
 export function useApp(): AppContextValue {
   const context = useContext(AppContext);
   if (!context) throw new Error('useApp harus dipakai di dalam <AppProvider>.');
+  return context;
+}
+
+export function useSettingsVisibility() {
+  const context = useContext(SettingsVisibilityContext);
+  if (!context) throw new Error('useSettingsVisibility harus dipakai di dalam <AppProvider>.');
   return context;
 }
 

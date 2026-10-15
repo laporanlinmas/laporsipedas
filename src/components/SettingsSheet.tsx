@@ -2,11 +2,10 @@
 
 import { useState, type ReactNode } from 'react';
 import Icon from './Icon';
-import { useApp } from '@/features/core/AppContext';
+import { useApp, useSettingsVisibility } from '@/features/core/AppContext';
 import {
   APP_CONTACT_WA,
   APP_NAME,
-  APP_TAGLINE,
   APP_VERSION,
   APP_WILAYAH,
   DEVELOPER_NAME,
@@ -94,8 +93,6 @@ function Group({
 /** Panel pengaturan yang sama untuk seluruh kategori. */
 export default function SettingsSheet() {
   const {
-    showSettings,
-    setShowSettings,
     settings,
     updateSettings,
     category,
@@ -105,6 +102,7 @@ export default function SettingsSheet() {
     coords,
     updateCoords,
   } = useApp();
+  const { showSettings, setShowSettings } = useSettingsVisibility();
   const [open, setOpen] = useState<Section>(null);
 
   const toggle = (id: Exclude<Section, null>) => setOpen(current => (current === id ? null : id));
@@ -303,10 +301,6 @@ export default function SettingsSheet() {
                 <dd>{category.name}</dd>
               </div>
               <div>
-                <dt>Satgas</dt>
-                <dd>Satgas Linmas</dd>
-              </div>
-              <div>
                 <dt>Wilayah</dt>
                 <dd>{APP_WILAYAH}</dd>
               </div>
@@ -335,7 +329,6 @@ export default function SettingsSheet() {
               </div>
             </div>
 
-            <p className="set-footnote">{APP_TAGLINE}</p>
           </Group>
         </div>
       </div>

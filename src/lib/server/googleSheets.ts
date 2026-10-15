@@ -1,4 +1,4 @@
-import { getSheets, getSpreadsheetId } from './googleAuth';
+import { getSpreadsheetId, withSheetsFallback } from './googleAuth';
 import { parseReport } from '../pedestrianParser';
 import { formatWib } from '../format';
 
@@ -103,13 +103,15 @@ export function buildPhotoRow(options: PhotoRowInput): (string | number)[] {
 
 async function appendRows(sheetName: string, rows: (string | number)[][]): Promise<void> {
   if (!rows.length) return;
-  await getSheets().spreadsheets.values.append({
-    spreadsheetId: getSpreadsheetId(),
-    range: `${sheetName}!A:A`,
-    valueInputOption: 'USER_ENTERED',
-    insertDataOption: 'INSERT_ROWS',
-    resource: { values: rows },
-  } as never);
+  await withSheetsFallback(sheets =>
+    sheets.spreadsheets.values.append({
+      spreadsheetId: getSpreadsheetId(),
+      range: `${sheetName}!A:A`,
+      valueInputOption: 'USER_ENTERED',
+      insertDataOption: 'INSERT_ROWS',
+      resource: { values: rows },
+    } as never),
+  );
 }
 
 /** Tulis baris laporan beserta seluruh detail foto dalam dua operasi. */

@@ -68,20 +68,6 @@ export default function StructuredForm({ className = '' }: { className?: string 
     }
   };
 
-  const onHighAccuracyLocate = async () => {
-    try {
-      const found = await locate();
-      updateReport({
-        lat: Number(found.lat.toFixed(6)),
-        lng: Number(found.lng.toFixed(6)),
-        coordSource: 'gps',
-        coordAccuracy: Number(found.accuracy.toFixed(1)),
-      });
-    } catch {
-      /* pesan sudah tersimpan di error */
-    }
-  };
-
   const hasCoords = report.lat != null && report.lng != null;
   const weakAccuracy =
     report.coordSource === 'gps' &&
@@ -135,29 +121,16 @@ export default function StructuredForm({ className = '' }: { className?: string 
               <span>
                 Detail alamat <b>*</b>
               </span>
-              <div className="btn-group">
-                <button
-                  type="button"
-                  className="geo-btn"
-                  onClick={onLocate}
-                  disabled={busy}
-                  title="Ambil koordinat GPS akurat dari perangkat"
-                >
-                  <Icon name={busy ? 'loader' : 'locate'} className={busy ? 'spin' : ''} />
-                  {busy ? 'Mengambil…' : 'Ambil koordinat akurat'}
-                </button>
-
-                <button
-                  type="button"
-                  className="geo-btn geo-btn--high"
-                  onClick={onHighAccuracyLocate}
-                  disabled={busy}
-                  title="Ambil koordinat akurat high (disimpan ke Firebase)"
-                >
-                  <Icon name="locate" className={busy ? 'spin' : ''} />
-                  {busy ? 'Mengambil…' : 'Akurat High'}
-                </button>
-              </div>
+              <button
+                type="button"
+                className="geo-btn geo-btn--high"
+                onClick={onLocate}
+                disabled={busy}
+                title="Ambil koordinat GPS akurat dari perangkat"
+              >
+                <Icon name={busy ? 'loader' : 'locate'} className={busy ? 'spin' : ''} />
+                {busy ? 'Mengambil…' : 'Ambil koordinat'}
+              </button>
             </div>
 
             <AutoTextarea

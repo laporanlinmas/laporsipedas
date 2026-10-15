@@ -1,5 +1,6 @@
 import { route, ok, str } from '@/lib/server/http';
 import { getCloudinaryConfig, signUpload } from '@/lib/server/cloudinary';
+import { verifyGoogleAccess } from '@/lib/server/googleAuth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -39,7 +40,22 @@ export async function GET(request: Request) {
     };
 
     if (params.get('check') === '1') {
-      return ok({ mode: ready ? ('direct' as const) : ('server' as const), params: null, config });
+      let googleAuthReady = false;
+      let googleAuthError: string | undefined;
+      if (scope === 'pedestrian' && config.google) {
+        try {
+          await verifyGoogleAccess();
+          googleAuthReady = true;
+        } catch (error) {
+          googleAuthError = (error as Error).message;
+        }
+      }
+      return ok({
+        mode: ready ? ('direct' as const) : ('server' as const),
+        params: null,
+        config,
+        ...(scope === 'pedestrian' ? { googleAuthReady, googleAuthError } : {}),
+      });
     }
 
     if (!ready) {

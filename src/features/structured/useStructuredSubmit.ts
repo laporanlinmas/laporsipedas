@@ -63,7 +63,7 @@ export function useStructuredSubmit() {
     if (!report.desaKelurahan) return 'Desa / kelurahan belum dipilih.';
     if (!report.detailAlamat.trim()) return 'Detail alamat belum diisi.';
     if (report.lat == null || report.lng == null) {
-      return 'Koordinat lokasi belum diisi. Tekan “Ambil koordinat akurat” atau pilih titik di peta.';
+      return 'Koordinat lokasi belum diisi. Tekan “Ambil koordinat” atau pilih titik di peta.';
     }
     if (!photos.length) return 'Pilih foto sebelum mengirim.';
     if (photos.length > MAX_PHOTOS) return `Maksimal ${MAX_PHOTOS} foto per laporan.`;

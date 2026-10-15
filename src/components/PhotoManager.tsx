@@ -181,7 +181,6 @@ export default function PhotoManager({
                     <span className="photo-zoom">
                       <Icon name="expand" />
                     </span>
-                    <span className={`photo-tag tag-${tagTone(photo)}`}>{tagLabel(photo)}</span>
                     <span className="photo-index">{index + 1}</span>
                     <span className="photo-size">{formatSizeKB(photo.sizeKB)}</span>
                     <button
@@ -236,20 +235,4 @@ export default function PhotoManager({
       </div>
     </section>
   );
-}
-
-function tagLabel(photo: PhotoData): string {
-  if (photo.fromDraft) return 'DRAFT';
-  if (photo.source === 'camera' && photo.exif?.gps) return 'EXIF + QR';
-  if (photo.source === 'camera') return 'WATERMARK';
-  if (photo.exif?.gps) return 'OCR + WM';
-  if (photo.compressed) return 'KOMPRES';
-  return 'WATERMARK';
-}
-
-function tagTone(photo: PhotoData): string {
-  if (photo.fromDraft) return 'draft';
-  if (photo.exif?.gps) return 'gps';
-  if (photo.compressed) return 'compress';
-  return 'plain';
 }

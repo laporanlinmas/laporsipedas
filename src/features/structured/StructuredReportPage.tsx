@@ -14,7 +14,7 @@ import { useApp } from '../core/AppContext';
 
 /** Halaman laporan kategori terstruktur: form + foto → Firebase + Cloudinary. */
 export default function StructuredReportPage() {
-  const { category, photoCount, isProcessing } = useApp();
+  const { photoCount, isProcessing } = useApp();
   const buildContext = useStructuredWatermarkContext();
   const { submit, busy } = useStructuredSubmit();
 
@@ -27,11 +27,9 @@ export default function StructuredReportPage() {
           <Link className="back-link" href="/">
             <Icon name="arrowLeft" /> Menu kategori
           </Link>
-          <span className="page-title">{category.name}</span>
         </div>
 
-        {/* Di mobile foto tampil lebih dulu, form menyusul (lihat .form-grid--photos-first). */}
-        <div className="form-grid form-grid--photos-first">
+        <div className="form-grid">
           <StructuredForm className="slot-form" />
           <PhotoManager
             className="slot-photos"

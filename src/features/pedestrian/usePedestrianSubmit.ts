@@ -83,6 +83,8 @@ export function usePedestrianSubmit() {
     try {
       const readiness = await apiFetch<{
         config: { google: boolean; sheet: boolean; drive: boolean };
+        googleAuthReady: boolean;
+        googleAuthError?: string;
       }>('/api/sign?scope=pedestrian&index=1&check=1', { timeout: 12_000 });
       const missingServices = [
         !readiness.config.google && 'kredensial Google',
@@ -93,6 +95,9 @@ export function usePedestrianSubmit() {
         throw new Error(
           `Upload Pedestrian belum siap. Konfigurasikan ${missingServices.join(', ')} pada environment server.`,
         );
+      }
+      if (!readiness.googleAuthReady) {
+        throw new Error(readiness.googleAuthError || 'Autentikasi Google gagal. Periksa kredensial OAuth atau service account.');
       }
 
       setProgress(0, 5, 'Mengecek teks laporan…');

@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import Icon from './Icon';
-import { useApp } from '@/features/core/AppContext';
+import { useApp, useSettingsVisibility } from '@/features/core/AppContext';
 import { APP_NAME, APP_TAGLINE } from '@/lib/constants';
 
 /**
@@ -11,7 +11,8 @@ import { APP_NAME, APP_TAGLINE } from '@/lib/constants';
  * Tautan CCTV hanya ditampilkan pada alur pedestrian.
  */
 export default function BrandHeader() {
-  const { flow, settings, toggleTheme, setShowSettings, online } = useApp();
+  const { flow, category, settings, toggleTheme, online } = useApp();
+  const { setShowSettings } = useSettingsVisibility();
 
   return (
     <header className="header">
@@ -66,7 +67,7 @@ export default function BrandHeader() {
           <div className="brand-line">
             <span className="brand-title">{APP_NAME}</span>
             <span className="brand-badge">
-              <Icon name="smartphone" /> Mobile
+              <Icon name="smartphone" /> {category.name}
             </span>
           </div>
           <p className="brand-sub">{APP_TAGLINE.toUpperCase()}</p>
