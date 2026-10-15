@@ -2,6 +2,7 @@
 
 import { Check, ChevronDown, Search, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import CustomScrollArea from './CustomScrollArea';
 
 interface SearchableSelectProps {
   label: string;
@@ -25,18 +26,19 @@ export default function SearchableSelect({
   const [query, setQuery] = useState('');
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const listId = `searchable-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
 
   useEffect(() => {
     if (!open) return;
-    const onPointer = (event: MouseEvent) => {
+    const onPointer = (event: PointerEvent) => {
       if (!rootRef.current?.contains(event.target as Node)) {
         setOpen(false);
         setQuery('');
       }
     };
-    document.addEventListener('mousedown', onPointer);
+    document.addEventListener('pointerdown', onPointer);
     inputRef.current?.focus();
-    return () => document.removeEventListener('mousedown', onPointer);
+    return () => document.removeEventListener('pointerdown', onPointer);
   }, [open]);
 
   const filtered = useMemo(() => {
@@ -90,7 +92,13 @@ export default function SearchableSelect({
               <X aria-hidden="true" />
             </button>
           </div>
-          <div className="searchable-panel" role="listbox">
+          <CustomScrollArea
+            id={listId}
+            label={`Pilihan ${label}`}
+            className="searchable-panel searchable-panel-scroll"
+            viewportClassName="searchable-options"
+            role="listbox"
+          >
             {filtered.length ? (
               filtered.map(option => (
                 <button
@@ -108,7 +116,7 @@ export default function SearchableSelect({
             ) : (
               <p className="searchable-empty">Tidak ditemukan</p>
             )}
-          </div>
+          </CustomScrollArea>
         </>
       ) : (
         <button
@@ -117,6 +125,7 @@ export default function SearchableSelect({
           disabled={disabled}
           aria-haspopup="listbox"
           aria-expanded={false}
+          aria-controls={listId}
           onClick={() => setOpen(true)}
         >
           <span>{value || placeholder}</span>

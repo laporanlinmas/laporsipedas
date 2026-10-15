@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from 'react';
 import Icon from './Icon';
+import CustomScrollArea from './ui/CustomScrollArea';
 import { useApp, useSettingsVisibility } from '@/features/core/AppContext';
 import {
   APP_CONTACT_WA,
@@ -130,7 +131,12 @@ export default function SettingsSheet() {
           </button>
         </div>
 
-        <div className="sheet-body">
+        <CustomScrollArea
+          id="settings-scroll"
+          label="Konten pengaturan"
+          className="sheet-scroll-area"
+          viewportClassName="sheet-body"
+        >
           <div className="set-card">
             <span className="set-card-ico">
               <Icon name={flow === 'pedestrian' ? 'shield' : 'file'} />
@@ -330,7 +336,7 @@ export default function SettingsSheet() {
             </div>
 
           </Group>
-        </div>
+        </CustomScrollArea>
       </div>
     </div>
   );

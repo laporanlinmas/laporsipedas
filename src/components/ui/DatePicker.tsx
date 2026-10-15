@@ -2,6 +2,7 @@
 
 import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight, Crosshair, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import CustomScrollArea from './CustomScrollArea';
 import { MONTHS_LONG, toDateInputValue } from '@/lib/format';
 
 const WEEKDAYS = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
@@ -271,20 +272,28 @@ function DateChoice({
         <ChevronDown aria-hidden="true" />
       </button>
       {open && (
-        <div className="date-choice-menu" id={id} role="listbox" aria-label={label}>
-          {options.map(option => (
-            <button
-              key={option.value}
-              type="button"
-              role="option"
-              aria-selected={option.value === value}
-              className={option.value === value ? 'selected' : ''}
-              ref={option.value === value ? selectedRef : undefined}
-              onClick={() => onChange(option.value)}
-            >
-              {option.label}
-            </button>
-          ))}
+        <div className="date-choice-menu">
+          <CustomScrollArea
+            id={id}
+            label={label}
+            className="date-choice-scroll"
+            viewportClassName="date-choice-viewport"
+            role="listbox"
+          >
+            {options.map(option => (
+              <button
+                key={option.value}
+                type="button"
+                role="option"
+                aria-selected={option.value === value}
+                className={option.value === value ? 'selected' : ''}
+                ref={option.value === value ? selectedRef : undefined}
+                onClick={() => onChange(option.value)}
+              >
+                {option.label}
+              </button>
+            ))}
+          </CustomScrollArea>
         </div>
       )}
     </div>
