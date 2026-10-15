@@ -37,6 +37,7 @@ import {
 } from './types';
 import { getCategoryBySlug, MAX_PHOTOS, type CategoryDef, type FlowKind } from '@/lib/constants';
 import { esc } from '@/lib/html';
+import { toDateInputValue } from '@/lib/format';
 import { preloadWatermarkLogo } from './watermark';
 import { applyThemeToDOM, getStoredTheme, saveStoredTheme } from '@/lib/theme';
 
@@ -223,6 +224,12 @@ export function AppProvider({
         }
       } catch {
         /* abaikan session rusak */
+      }
+
+      if (flow === 'structured') {
+        setReport(previous =>
+          previous.tanggal ? previous : { ...previous, tanggal: toDateInputValue() },
+        );
       }
 
       if (flow === 'pedestrian') {
@@ -461,7 +468,11 @@ export function AppProvider({
       setLocation(defaultLocation);
       setCoords(EMPTY_COORDS);
       if (flow === 'structured') {
-        setReport({ ...emptyStructuredReport, kegiatan: category.name });
+        setReport({
+          ...emptyStructuredReport,
+          kegiatan: category.name,
+          tanggal: toDateInputValue(),
+        });
       }
 
       if (!options?.silent) {

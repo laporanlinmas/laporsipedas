@@ -11,8 +11,6 @@ import type { PhotoData } from '@/features/core/types';
 export interface PhotoManagerProps {
   /** Membangun konteks watermark (beda per alur). */
   buildContext: BuildContext;
-  cameraNote?: string;
-  galleryNote?: string;
   /** Slot aksi tambahan di bawah grid (mis. Transfer / Load draft). */
   children?: ReactNode;
   showDownload?: boolean;
@@ -26,8 +24,6 @@ export interface PhotoManagerProps {
  */
 export default function PhotoManager({
   buildContext,
-  cameraNote = 'EXIF, QR lokasi, watermark',
-  galleryNote = 'Kompresi + watermark',
   children,
   showDownload = true,
   className = '',
@@ -104,7 +100,6 @@ export default function PhotoManager({
           >
             <Icon name="camera" />
             <span className="upload-main">Kamera</span>
-            <span className="upload-note">{cameraNote}</span>
           </button>
           <button
             type="button"
@@ -114,7 +109,6 @@ export default function PhotoManager({
           >
             <Icon name="images" />
             <span className="upload-main">Galeri</span>
-            <span className="upload-note">{galleryNote}</span>
           </button>
         </div>
 
@@ -143,9 +137,7 @@ export default function PhotoManager({
 
         <div className="photo-status">
         {photos.length === 0 ? (
-          <span>
-            Belum ada foto — <b>wajib</b> minimal 1 foto
-          </span>
+          <span>Belum ada foto</span>
         ) : (
           <span>
             <b>{photos.length}</b> foto dipilih{full && <em> (maksimal)</em>}

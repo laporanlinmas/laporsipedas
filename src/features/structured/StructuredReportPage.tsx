@@ -16,7 +16,7 @@ import { useApp } from '../core/AppContext';
 export default function StructuredReportPage() {
   const { category, photoCount, isProcessing } = useApp();
   const buildContext = useStructuredWatermarkContext();
-  const { submit, busy, problem } = useStructuredSubmit();
+  const { submit, busy } = useStructuredSubmit();
 
   return (
     <div className="shell">
@@ -36,8 +36,6 @@ export default function StructuredReportPage() {
           <PhotoManager
             className="slot-photos"
             buildContext={buildContext}
-            cameraNote="EXIF, QR lokasi, watermark"
-            galleryNote="Kompresi + watermark"
           />
         </div>
 
@@ -46,7 +44,6 @@ export default function StructuredReportPage() {
           busy={busy}
           disabled={photoCount === 0 || isProcessing}
           label="KIRIM LAPORAN"
-          hint={problem ?? 'Foto dikirim ke Cloudinary, data laporan disimpan di Firebase.'}
         />
       </div>
 

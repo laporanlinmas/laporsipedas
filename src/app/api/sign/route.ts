@@ -23,15 +23,24 @@ export async function GET(request: Request) {
 
     const config = {
       cloudinary: ready,
-      firebase: Boolean(process.env.FIREBASE_SERVICE_ACCOUNT || process.env.FIREBASE_SERVICE_ACCOUNT_JSON),
+      firebase: Boolean(
+        process.env.FIREBASE_SERVICE_ACCOUNT ||
+          process.env.FIREBASE_SERVICE_ACCOUNT_JSON ||
+          process.env.GOOGLE_SERVICE_ACCOUNT_KEY,
+      ),
       google: Boolean(
         (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.env.GOOGLE_REFRESH_TOKEN) ||
-          process.env.GOOGLE_SERVICE_ACCOUNT_JSON,
+          process.env.GOOGLE_SERVICE_ACCOUNT_JSON ||
+          process.env.GOOGLE_SERVICE_ACCOUNT_KEY,
       ),
       sheet: Boolean(process.env.SPREADSHEET_UTAMA_ID || process.env.GOOGLE_SHEET_ID),
       drive: Boolean(process.env.FOLDER_UTAMA_ID || process.env.GOOGLE_DRIVE_FOLDER_ID),
       appsScript: Boolean(process.env.APPS_SCRIPT_URL),
     };
+
+    if (params.get('check') === '1') {
+      return ok({ mode: ready ? ('direct' as const) : ('server' as const), params: null, config });
+    }
 
     if (!ready) {
       return ok({ mode: 'server' as const, params: null, config });

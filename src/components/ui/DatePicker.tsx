@@ -89,7 +89,7 @@ export default function DatePicker({
         <CalendarDays aria-hidden="true" />
         <span>{value ? formatLabel(value) : 'Pilih tanggal'}</span>
         <span className="date-tools">
-          {value && (
+          {value && !required && (
             <span
               className="date-clear"
               role="button"

@@ -57,7 +57,7 @@ export default function SubmitBar({
           disabled={disabled || busy || blocked}
         >
           {busy ? <Icon name="loader" className="spin" /> : <Icon name="send" />}
-          {busy ? 'MENGIRIMAN…' : label}
+          {busy ? 'MENGIRIM…' : label}
         </button>
       </div>
 

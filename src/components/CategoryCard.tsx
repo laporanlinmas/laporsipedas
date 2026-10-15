@@ -24,7 +24,6 @@ export default function CategoryCard({ category }: { category: CategoryDef }) {
       </span>
       <span className="landing-copy">
         <strong>{category.name}</strong>
-        <small>{category.description}</small>
       </span>
     </Link>
   );

@@ -6,6 +6,7 @@ import { adaptiveConcurrency, apiFetch, parallelLimit, withRetry } from '../core
 import { formatExifTime } from '../core/exif';
 import { esc } from '@/lib/html';
 import { MAX_PHOTOS } from '@/lib/constants';
+import { FIELD_LABELS, parseReport } from '@/lib/pedestrianParser';
 import type { PhotoData } from '../core/types';
 
 /**
@@ -55,12 +56,17 @@ export function usePedestrianSubmit() {
   const [busy, setBusy] = useState(false);
 
   const validate = useCallback((): string | null => {
-    if (!photos.length) return 'Lampirkan minimal 1 foto dokumentasi.';
+    if (!reportText.trim()) return 'Tempel teks laporan sebelum mengirim.';
+    const parsed = parseReport(reportText);
+    if (parsed.missing.length) {
+      return `Lengkapi bagian laporan: ${parsed.missing.map(field => FIELD_LABELS[field]).join(', ')}.`;
+    }
+    if (!photos.length) return 'Pilih foto sebelum mengirim.';
     if (photos.length > MAX_PHOTOS) return `Maksimal ${MAX_PHOTOS} foto per laporan.`;
     if (photos.some(photo => photo.processing)) return 'Sebagian foto masih diproses.';
     if (photos.some(photo => !photo.data)) return 'Sebagian foto belum selesai disiapkan.';
     return null;
-  }, [photos]);
+  }, [photos, reportText]);
 
   const submit = useCallback(async () => {
     if (busy) return;
@@ -72,9 +78,24 @@ export function usePedestrianSubmit() {
 
     setBusy(true);
     startLoading('submit', 'Mengirim Laporan…', 'Menyiapkan data…', STEPS);
-    setProgress(0, 5, 'Mengecek teks laporan…');
+    setProgress(0, 5, 'Memeriksa koneksi layanan…');
 
     try {
+      const readiness = await apiFetch<{
+        config: { google: boolean; sheet: boolean; drive: boolean };
+      }>('/api/sign?scope=pedestrian&index=1&check=1', { timeout: 12_000 });
+      const missingServices = [
+        !readiness.config.google && 'kredensial Google',
+        !readiness.config.drive && 'folder Google Drive',
+        !readiness.config.sheet && 'ID Google Spreadsheet',
+      ].filter(Boolean);
+      if (missingServices.length) {
+        throw new Error(
+          `Upload Pedestrian belum siap. Konfigurasikan ${missingServices.join(', ')} pada environment server.`,
+        );
+      }
+
+      setProgress(0, 5, 'Mengecek teks laporan…');
       let done = 0;
       const results = await parallelLimit(
         photos,
@@ -180,7 +201,7 @@ export function usePedestrianSubmit() {
     showAlert, startLoading, setProgress, stopLoading, resetReport,
   ]);
 
-  return { submit, busy, problem: validate() };
+  return { submit, busy };
 }
 
 function metaOf(photo: PhotoData): DrivePhotoLink['meta'] {

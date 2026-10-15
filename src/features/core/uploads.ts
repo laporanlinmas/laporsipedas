@@ -100,6 +100,7 @@ async function uploadToCloudinary(
   scope: string,
   index: number,
   context: Record<string, string>,
+  signal?: AbortSignal,
 ): Promise<UploadedAsset> {
   const sign = await requestSignature(scope, index);
   if (sign.mode !== 'direct' || !sign.params) {
@@ -122,9 +123,11 @@ async function uploadToCloudinary(
     .join('|');
   if (contextPairs) form.append('context', contextPairs);
 
-  const response = await fetch(
+  const response = await fetchWithTimeout(
     `https://api.cloudinary.com/v1_1/${params.cloudName}/image/upload`,
     { method: 'POST', body: form },
+    60_000,
+    signal,
   );
 
   if (!response.ok) {
@@ -139,6 +142,10 @@ async function uploadToCloudinary(
     height?: number;
   };
 
+  if (!result.public_id || !result.secure_url) {
+    throw new RequestError('Cloudinary tidak mengembalikan data foto yang valid.', 'invalid_upload_response');
+  }
+
   return {
     publicId: result.public_id,
     url: result.secure_url,
@@ -148,20 +155,57 @@ async function uploadToCloudinary(
   };
 }
 
-async function uploadViaServer(file: Blob, scope: string, context: Record<string, string>): Promise<UploadedAsset> {
+async function uploadViaServer(
+  file: Blob,
+  scope: string,
+  context: Record<string, string>,
+  signal?: AbortSignal,
+): Promise<UploadedAsset> {
   const form = new FormData();
   form.append('scope', scope);
   form.append('konteks', JSON.stringify(context));
   form.append('foto', file, 'foto.jpg');
 
-  const response = await fetch('/api/upload', { method: 'POST', body: form });
+  const response = await fetchWithTimeout('/api/upload', { method: 'POST', body: form }, 60_000, signal);
   const payload = await response.json().catch(() => null);
 
   if (!response.ok || !payload?.success) {
     throw new RequestError(payload?.message || `Server menolak unggahan (${response.status}).`, 'upload', response.status);
   }
 
+  if (typeof payload.publicId !== 'string' || typeof payload.url !== 'string') {
+    throw new RequestError('Server tidak mengembalikan data foto yang valid.', 'invalid_upload_response');
+  }
+
   return { publicId: payload.publicId, url: payload.url };
+}
+
+async function fetchWithTimeout(
+  input: RequestInfo | URL,
+  init: RequestInit,
+  timeout: number,
+  externalSignal?: AbortSignal,
+): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+  const abort = () => controller.abort();
+  if (externalSignal?.aborted) controller.abort();
+  externalSignal?.addEventListener('abort', abort, { once: true });
+
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } catch (error) {
+    if ((error as Error)?.name === 'AbortError') {
+      throw new RequestError(
+        externalSignal?.aborted ? 'Unggahan dibatalkan.' : 'Unggahan terlalu lama, coba lagi.',
+        externalSignal?.aborted ? 'aborted' : 'timeout',
+      );
+    }
+    throw new RequestError('Koneksi unggah terputus. Periksa internet lalu coba lagi.', 'network');
+  } finally {
+    clearTimeout(timer);
+    externalSignal?.removeEventListener('abort', abort);
+  }
 }
 
 export interface UploadPhotoOptions {
@@ -181,14 +225,14 @@ export async function uploadPhoto(options: UploadPhotoOptions): Promise<Uploaded
   const run = async (): Promise<UploadedAsset> => {
     if (mode?.mode === 'direct') {
       try {
-        return await uploadToCloudinary(file, scope, index, context);
+        return await uploadToCloudinary(file, scope, index, context, signal);
       } catch (error) {
         if (signal?.aborted) throw error;
         console.warn('[upload] upload langsung gagal, beralih ke server', error);
-        return uploadViaServer(file, scope, context);
+        return uploadViaServer(file, scope, context, signal);
       }
     }
-    return uploadViaServer(file, scope, context);
+    return uploadViaServer(file, scope, context, signal);
   };
 
   return withRetry(run, attempts, 500);

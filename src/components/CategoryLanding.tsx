@@ -16,8 +16,7 @@ export default function CategoryLanding() {
   return (
     <main className="landing">
       {/* Ornamen batik dekoratif - menyatu dengan gradient */}
-      <div className="landing-ornament landing-ornament--tl" aria-hidden="true" />
-      <div className="landing-ornament landing-ornament--br" aria-hidden="true" />
+      <div className="landing-ornament-pattern" aria-hidden="true" />
       <div className="landing-wash" aria-hidden="true" />
 
       <div className="landing-header">

@@ -285,25 +285,15 @@ svg {
   opacity: 0.1;
 }
 
-.landing-ornament--tl {
-  top: -4%;
-  left: -3%;
-  width: 520px;
-  height: 420px;
-  background-position: left top;
-  -webkit-mask-image: linear-gradient(135deg, #000 0%, #000 28%, transparent 78%);
-  mask-image: linear-gradient(135deg, #000 0%, #000 28%, transparent 78%);
-}
-
-.landing-ornament--br {
-  right: -4%;
-  bottom: -6%;
-  width: 480px;
-  height: 380px;
-  background-position: right bottom;
-  opacity: 0.085;
-  -webkit-mask-image: linear-gradient(315deg, #000 0%, #000 28%, transparent 78%);
-  mask-image: linear-gradient(315deg, #000 0%, #000 28%, transparent 78%);
+.landing-ornament-pattern {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  inset: 0;
+  background-image: url("/assets/batik-ornament.svg");
+  background-repeat: repeat;
+  background-size: 420px auto;
+  opacity: 0.035;
 }
 
 .landing-wash {
@@ -495,18 +485,6 @@ svg {
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.landing-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--accent), transparent);
-  opacity: 0;
-  transition: opacity 0.25s ease;
-}
-
 .landing-card::after {
   content: '';
   position: absolute;
@@ -528,11 +506,6 @@ svg {
   transform: translateY(-6px);
   border-color: color-mix(in srgb, var(--accent) 45%, transparent);
   box-shadow: 0 20px 40px rgba(3, 8, 20, 0.3);
-}
-
-.landing-card:hover::before,
-.landing-card:focus-visible::before {
-  opacity: 1;
 }
 
 .landing-card:hover::after,
@@ -582,7 +555,7 @@ svg {
   font-size: 0.98rem;
   font-weight: 700;
   line-height: 1.25;
-  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
   text-wrap: balance;
   color: var(--text);
   transition: color 0.25s ease;
@@ -590,12 +563,6 @@ svg {
 
 .landing-card:hover .landing-copy strong {
   color: var(--accent);
-}
-
-.landing-copy small {
-  color: var(--muted);
-  font-size: 0.76rem;
-  line-height: 1.5;
 }
 
 /* ── 3.1. Responsive Landing ────────────────────────────────────── */
@@ -1672,35 +1639,6 @@ svg {
   height: 13px;
 }
 
-.check-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.check-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 9px;
-  border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  color: var(--muted);
-  font-size: 0.65rem;
-  font-weight: 600;
-}
-
-.check-pill svg {
-  width: 12px;
-  height: 12px;
-}
-
-.check-pill.ok {
-  border-color: var(--green-dim);
-  background: var(--green-pale);
-  color: var(--green);
-}
-
 .hint-warn {
   display: flex;
   align-items: flex-start;
@@ -1736,7 +1674,7 @@ svg {
 
 .upload-btn {
   display: flex;
-  min-height: 104px;
+  min-height: 84px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -1760,12 +1698,6 @@ svg {
   font-weight: 800;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-}
-
-.upload-btn .upload-note {
-  color: var(--muted);
-  font-size: 0.6rem;
-  line-height: 1.4;
 }
 
 .upload-btn.tone-camera:hover:not(:disabled) {
@@ -2100,8 +2032,9 @@ svg {
 }
 
 .btn-submit:disabled {
-  background: var(--card-2);
-  color: var(--muted);
+  background: var(--blue);
+  color: #fff;
+  opacity: 0.62;
   box-shadow: none;
 }
 
@@ -3398,16 +3331,6 @@ svg {
     --pad-y: clamp(24px, 6vw, 40px);
   }
 
-  .landing-ornament--tl {
-    width: 380px;
-    height: 300px;
-  }
-
-  .landing-ornament--br {
-    width: 340px;
-    height: 280px;
-  }
-
   .landing-hero {
     margin-bottom: 26px;
   }
@@ -3439,14 +3362,13 @@ svg {
     line-height: 1.2;
   }
 
-  .landing-copy small {
-    font-size: 0.7rem;
-  }
 }
 
 @media (max-width: 620px) {
   .landing {
-    width: min(100% - 24px, 1040px);
+    width: 100%;
+    padding-left: max(12px, var(--safe-left));
+    padding-right: max(12px, var(--safe-right));
   }
 
   .shell-inner {
@@ -3517,6 +3439,16 @@ svg {
   .submit-inner,
   .submit-hint {
     width: 100%;
+  }
+}
+
+@media (max-width: 430px) {
+  .landing-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-card {
+    min-height: 76px;
   }
 }
 

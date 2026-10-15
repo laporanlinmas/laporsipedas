@@ -109,11 +109,6 @@ export default function SettingsSheet() {
 
   const toggle = (id: Exclude<Section, null>) => setOpen(current => (current === id ? null : id));
 
-  const storageLabel =
-    flow === 'pedestrian'
-      ? 'Teks laporan ditempel dari WhatsApp, foto dikirim ke Google Drive, data ditulis ke Spreadsheet.'
-      : 'Data laporan disimpan ke Firebase Firestore, foto diunggah ke Cloudinary.';
-
   return (
     <div
       className={`sheet-overlay${showSettings ? ' show' : ''}`}
@@ -144,7 +139,6 @@ export default function SettingsSheet() {
             </span>
             <div>
               <strong>{category.name}</strong>
-              <p>{storageLabel}</p>
             </div>
           </div>
 
@@ -324,7 +318,7 @@ export default function SettingsSheet() {
               target="_blank"
               rel="noreferrer"
             >
-              <Icon name="message" /> Hubungi WhatsApp
+              <WhatsAppIcon /> Hubungi WhatsApp
             </a>
 
             <div className="author">
@@ -346,6 +340,21 @@ export default function SettingsSheet() {
         </div>
       </div>
     </div>
+  );
+}
+
+function WhatsAppIcon() {
+  return (
+    <svg viewBox="0 0 32 32" aria-hidden="true">
+      <path
+        fill="#25D366"
+        d="M16 2.4a13.4 13.4 0 0 0-11.5 20.3L2.8 29l6.5-1.7A13.4 13.4 0 1 0 16 2.4Z"
+      />
+      <path
+        fill="#fff"
+        d="M22.8 19.4c-.3-.2-2-1-2.3-1.1-.3-.1-.5-.2-.7.2-.2.3-.9 1.1-1.1 1.3-.2.2-.4.2-.7.1-.3-.2-1.4-.5-2.6-1.6-1-.9-1.6-1.9-1.8-2.2-.2-.3 0-.5.1-.6l.5-.6c.2-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.2-.7-1.8-1-2.4-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1.1 1-1.1 2.4 0 1.4 1.1 2.8 1.2 3 .2.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2.1-1.4.3-.7.3-1.3.2-1.4 0-.2-.3-.3-.6-.5Z"
+      />
+    </svg>
   );
 }
 

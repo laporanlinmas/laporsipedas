@@ -19,7 +19,7 @@ export default function PedestrianReportPage() {
   const { category, activeDraftId, isProcessing, photoCount } = useApp();
   const buildContext = usePedestrianWatermarkContext();
   const drafts = useDraftManager();
-  const { submit, busy, problem } = usePedestrianSubmit();
+  const { submit, busy } = usePedestrianSubmit();
 
   return (
     <div className="shell">
@@ -38,8 +38,6 @@ export default function PedestrianReportPage() {
           <PhotoManager
             className="slot-photos"
             buildContext={buildContext}
-            cameraNote="EXIF, QR lokasi, watermark"
-            galleryNote="Kompresi + watermark lokasi manual"
           >
             <div className="draft-row">
               <button
@@ -76,7 +74,6 @@ export default function PedestrianReportPage() {
           busy={busy}
           disabled={photoCount === 0 || isProcessing}
           label="KIRIM LAPORAN"
-          hint={problem ?? 'Foto diunggah ke Google Drive, laporan ditulis ke Spreadsheet.'}
         />
       </div>
 

@@ -5,7 +5,7 @@ import { useApp } from '../core/AppContext';
 import { adaptiveConcurrency, apiFetch, parallelLimit, withRetry } from '../core/apiClient';
 import { uploadPhoto, type UploadedAsset } from '../core/uploads';
 import { esc } from '@/lib/html';
-import { formatDateInput } from '@/lib/format';
+import { formatDateInput, toDateInputValue } from '@/lib/format';
 import { MAX_PHOTOS } from '@/lib/constants';
 import { composeReportAddress } from '../core/watermark';
 import type { PhotoData, PhotoMetaPayload } from '../core/types';
@@ -59,14 +59,13 @@ export function useStructuredSubmit() {
   const [busy, setBusy] = useState(false);
 
   const validate = useCallback((): string | null => {
-    if (!report.tanggal) return 'Tanggal laporan belum diisi.';
     if (!report.kecamatan) return 'Kecamatan belum dipilih.';
     if (!report.desaKelurahan) return 'Desa / kelurahan belum dipilih.';
     if (!report.detailAlamat.trim()) return 'Detail alamat belum diisi.';
     if (report.lat == null || report.lng == null) {
       return 'Koordinat lokasi belum diisi. Tekan “Ambil koordinat akurat” atau pilih titik di peta.';
     }
-    if (!photos.length) return 'Lampirkan minimal 1 foto dokumentasi.';
+    if (!photos.length) return 'Pilih foto sebelum mengirim.';
     if (photos.length > MAX_PHOTOS) return `Maksimal ${MAX_PHOTOS} foto per laporan.`;
     if (photos.some(photo => photo.processing)) return 'Sebagian foto masih diproses.';
     if (photos.some(photo => !photo.data)) return 'Sebagian foto belum selesai disiapkan.';
@@ -85,6 +84,7 @@ export function useStructuredSubmit() {
     startLoading('submit', 'Mengirim Laporan…', 'Menyiapkan data…', STEPS);
     setProgress(0, 6, 'Memeriksa data…');
 
+    const tanggal = report.tanggal || toDateInputValue();
     const requestId = `rep-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
     const assets = new Map<string, UploadedAsset>();
     let done = 0;
@@ -128,7 +128,7 @@ export function useStructuredSubmit() {
             body: {
               requestId,
               kegiatan: category.name,
-              tanggal: report.tanggal,
+              tanggal,
               kecamatan: report.kecamatan,
               desaKelurahan: report.desaKelurahan,
               detailAlamat: report.detailAlamat,
@@ -171,7 +171,7 @@ export function useStructuredSubmit() {
         'success',
         'Laporan Terkirim',
         `Laporan <b>${esc(category.name)}</b> beserta <b>${photos.length}</b> foto berhasil disimpan` +
-          `${report.tanggal ? ` untuk tanggal <b>${esc(formatDateInput(report.tanggal))}</b>` : ''}.`,
+          ` untuk tanggal <b>${esc(formatDateInput(tanggal))}</b>.`,
       );
     } catch (error) {
       stopLoading();
@@ -188,5 +188,5 @@ export function useStructuredSubmit() {
     busy, validate, photos, category, report, showAlert, startLoading, setProgress, stopLoading, resetReport,
   ]);
 
-  return { submit, busy, problem: validate() };
+  return { submit, busy };
 }
