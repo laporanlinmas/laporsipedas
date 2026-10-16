@@ -107,7 +107,14 @@ export default function ServiceViewer({ src, title, frameTitle, icon }: ServiceV
           allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
           allowFullScreen
           referrerPolicy="strict-origin-when-cross-origin"
-          onLoad={() => setLoading(false)}
+          onLoad={event => {
+            const frame = event.currentTarget;
+            window.setTimeout(() => {
+              if (!frame.isConnected || !navigator.onLine) return;
+              setLoading(false);
+              setError(false);
+            }, 350);
+          }}
           onError={() => {
             setLoading(false);
             setError(true);

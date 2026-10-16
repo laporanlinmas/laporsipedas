@@ -18,7 +18,16 @@
    Mengubah nama ini membuat browser membuang cache lama saat SW diaktifkan. */
 const CACHE_NAME = 'sipedas-v5.0.0';
 const OFFLINE_URL = '/';
-const PRECACHE = ['/assets/icon-512.png', '/assets/batik-ornament.svg'];
+const PRECACHE = [
+  '/assets/icon-512.png',
+  '/assets/batik-ornament.svg',
+  '/assets/kategori/pedestrian.webp',
+  '/assets/kategori/poskamling.webp',
+  '/assets/kategori/posyandu.webp',
+  '/assets/kategori/kebencanaan.webp',
+  '/assets/kategori/yanmas.webp',
+  '/assets/kategori/lainnya.webp',
+];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

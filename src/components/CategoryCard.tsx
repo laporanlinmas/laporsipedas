@@ -18,7 +18,7 @@ export default function CategoryCard({ category }: { category: CategoryDef }) {
           alt=""
           width={256}
           height={256}
-          loading="lazy"
+          loading="eager"
           decoding="async"
         />
       </span>
