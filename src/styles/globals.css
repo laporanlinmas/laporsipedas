@@ -659,18 +659,6 @@ svg {
   overflow-wrap: anywhere;
 }
 
-.landing-other-copy > span {
-  color: var(--muted);
-  font-size: 0.72rem;
-  line-height: 1.35;
-}
-
-.landing-other-arrow {
-  width: 16px;
-  height: 16px;
-  color: var(--muted);
-}
-
 .landing-card:hover .landing-copy strong {
   color: var(--accent);
 }
@@ -3407,12 +3395,17 @@ svg {
 }
 
 .viewer-bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
   padding: calc(6px + var(--safe-top)) 12px 6px;
   border-bottom: 1px solid rgba(148, 178, 226, 0.12);
+  background: #05080f;
 }
 
 .viewer-title {
@@ -3430,24 +3423,6 @@ svg {
   height: 14px;
   color: var(--blue-bright);
 }
-
-.viewer-open {
-  display: inline-flex;
-  min-height: 32px;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 5px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 7px;
-  background: rgba(255, 255, 255, 0.06);
-  color: #e8eefb;
-  font-size: 0.7rem;
-  font-weight: 700;
-}
-
-.viewer-open:hover { background: rgba(255, 255, 255, 0.12); }
-.viewer-open svg { width: 14px; height: 14px; }
 
 /* Header dibuat setipis mungkin agar area kamera 최대한 luas. */
 .viewer-bar .back-link,
@@ -3484,21 +3459,6 @@ svg {
   border: 0;
 }
 
-.viewer-loading,
-.viewer-error {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  color: var(--muted);
-  font-size: 0.85rem;
-  text-align: center;
-  padding: 20px;
-}
-
 .viewer-loading svg {
   width: 32px;
   height: 32px;
@@ -3515,6 +3475,31 @@ svg {
   max-width: 400px;
   line-height: 1.5;
 }
+
+.viewer-error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.viewer-retry-button {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 13px;
+  border: 1px solid rgba(77, 141, 251, 0.4);
+  border-radius: 8px;
+  background: rgba(77, 141, 251, 0.12);
+  color: #c7dcff;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.viewer-retry-button:hover { background: rgba(77, 141, 251, 0.2); }
+.viewer-retry-button svg { width: 15px; height: 15px; }
 
 .viewer-retry-link {
   display: inline-flex;
@@ -3562,21 +3547,30 @@ svg {
   .landing-other-card { min-height: 74px; gap: 10px; padding: 11px; }
 
   .landing-card {
-    gap: 12px;
-    min-height: 88px;
-    padding: 12px 13px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 9px;
+    min-height: 126px;
+    padding: 12px 10px;
+    text-align: center;
   }
 
   .landing-ico {
-    flex: 0 0 64px;
-    width: 64px;
-    height: 64px;
-    border-radius: 14px;
+    flex: 0 0 60px;
+    width: 60px;
+    height: 60px;
+    border-radius: 15px;
+  }
+
+  .landing-copy {
+    width: 100%;
+    align-items: center;
   }
 
   .landing-copy strong {
-    font-size: 0.86rem;
+    font-size: 0.84rem;
     line-height: 1.2;
+    text-align: center;
   }
 
 }
@@ -3684,29 +3678,31 @@ svg {
   .landing-region { font-size: 1.55rem; }
 
   .landing-card {
-    flex-direction: row;
-    justify-content: flex-start;
+    flex-direction: column;
+    justify-content: center;
     gap: 8px;
-    min-height: 72px;
-    padding: 9px;
-    text-align: left;
+    min-height: 126px;
+    padding: 11px 8px;
+    text-align: center;
   }
 
   .landing-ico {
-    flex-basis: 42px;
-    width: 42px;
-    height: 42px;
-    border-radius: 11px;
+    flex-basis: 60px;
+    width: 60px;
+    height: 60px;
+    border-radius: 15px;
   }
 
   .landing-copy {
-    align-items: flex-start;
+    width: 100%;
+    align-items: center;
     gap: 3px;
   }
 
   .landing-copy strong {
     max-width: 100%;
-    font-size: 0.76rem;
+    font-size: 0.82rem;
+    text-align: center;
     overflow-wrap: break-word;
     word-break: normal;
   }
@@ -3717,13 +3713,9 @@ svg {
   .landing-other-card { min-height: 58px; gap: 7px; padding: 8px; }
   .landing-other-icon { width: 34px; height: 34px; flex-basis: 34px; border-radius: 9px; }
   .landing-other-copy strong { font-size: 0.65rem; }
-  .landing-other-copy > span { display: none; }
-  .landing-other-arrow { width: 13px; height: 13px; }
 
   .viewer-bar { gap: 6px; }
   .viewer-title { font-size: 0.65rem; }
-  .viewer-open { min-height: 30px; padding: 5px 8px; }
-  .viewer-open span { display: none; }
 }
 
 @media (max-width: 380px) {

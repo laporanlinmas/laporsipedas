@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Icon, { type IconName } from '@/components/Icon';
 
@@ -14,6 +14,54 @@ interface ServiceViewerProps {
 export default function ServiceViewer({ src, title, frameTitle, icon }: ServiceViewerProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [online, setOnline] = useState(true);
+  const [attempt, setAttempt] = useState(0);
+
+  useEffect(() => {
+    const handleOffline = () => {
+      setOnline(false);
+      setLoading(false);
+      setError(true);
+    };
+    const handleOnline = () => {
+      setOnline(true);
+      setLoading(true);
+      setError(false);
+      setAttempt(value => value + 1);
+    };
+
+    setOnline(navigator.onLine);
+    window.addEventListener('offline', handleOffline);
+    window.addEventListener('online', handleOnline);
+    if (!navigator.onLine) handleOffline();
+
+    return () => {
+      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('online', handleOnline);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!loading) return;
+    const timeout = window.setTimeout(() => {
+      setLoading(false);
+      setError(true);
+    }, 20_000);
+    return () => window.clearTimeout(timeout);
+  }, [loading, attempt]);
+
+  function retry() {
+    if (!navigator.onLine) {
+      setOnline(false);
+      setError(true);
+      setLoading(false);
+      return;
+    }
+    setOnline(true);
+    setError(false);
+    setLoading(true);
+    setAttempt(value => value + 1);
+  }
 
   return (
     <main className="viewer">
@@ -24,10 +72,6 @@ export default function ServiceViewer({ src, title, frameTitle, icon }: ServiceV
         <span className="viewer-title">
           <Icon name={icon} /> {title}
         </span>
-        <a className="viewer-open" href={src} target="_blank" rel="noopener noreferrer">
-          <Icon name="externalLink" />
-          <span>Buka situs</span>
-        </a>
       </div>
       <div className="viewer-frame">
         {loading && !error && (
@@ -39,13 +83,25 @@ export default function ServiceViewer({ src, title, frameTitle, icon }: ServiceV
         {error && (
           <div className="viewer-error" role="alert">
             <Icon name="wifiOff" />
-            <span>Situs tidak dapat dimuat di sini. Buka situs langsung untuk melanjutkan.</span>
-            <a className="viewer-retry-link" href={src} target="_blank" rel="noopener noreferrer">
-              Buka {title} <Icon name="externalLink" />
-            </a>
+            <span>
+              {online
+                ? `${title} belum merespons atau sedang mengalami gangguan. Periksa koneksi, lalu coba lagi.`
+                : 'Koneksi internet terputus. Sambungkan kembali ke internet, lalu coba lagi.'}
+            </span>
+            <div className="viewer-error-actions">
+              <button className="viewer-retry-button" type="button" onClick={retry}>
+                <Icon name="refresh" /> Coba lagi
+              </button>
+              {online && (
+                <a className="viewer-retry-link" href={src} target="_blank" rel="noopener noreferrer">
+                  Buka situs langsung <Icon name="externalLink" />
+                </a>
+              )}
+            </div>
           </div>
         )}
         <iframe
+          key={attempt}
           src={src}
           title={frameTitle}
           allow="autoplay; fullscreen; encrypted-media; picture-in-picture"

@@ -81,9 +81,7 @@ export default function CategoryLanding() {
             </span>
             <span className="landing-other-copy">
               <strong>SIPEDAS ADMIN</strong>
-              <span>Kelola data dan administrasi</span>
             </span>
-            <Icon name="chevronRight" className="landing-other-arrow" />
           </Link>
           <Link className="landing-other-card landing-other-view" href="/cctv">
             <span className="landing-other-icon">
@@ -91,9 +89,7 @@ export default function CategoryLanding() {
             </span>
             <span className="landing-other-copy">
               <strong>SIPEDAS VIEW</strong>
-              <span>Pantau kamera CCTV</span>
             </span>
-            <Icon name="chevronRight" className="landing-other-arrow" />
           </Link>
         </div>
       </section>
