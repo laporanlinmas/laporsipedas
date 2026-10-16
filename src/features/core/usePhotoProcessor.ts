@@ -65,7 +65,7 @@ export function usePhotoProcessor() {
 
       try {
         patchPhoto(id, { procLabel: 'Membaca EXIF...' });
-        const exif = source === 'camera' ? await readExif(file) : null;
+        const exif = await readExif(file);
 
         let address: GeoAddress | null = null;
         let effectiveExif: ExifData | null = exif;

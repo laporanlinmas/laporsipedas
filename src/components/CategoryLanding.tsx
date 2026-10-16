@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import CategoryCard from './CategoryCard';
 import Icon from './Icon';
 import { APP_NAME, APP_TAGLINE, CATEGORIES } from '@/lib/constants';
@@ -67,6 +68,35 @@ export default function CategoryLanding() {
           </li>
         ))}
       </ul>
+
+      <section className="landing-other" aria-labelledby="landing-other-title">
+        <div className="landing-other-heading">
+          <h2 id="landing-other-title">Menu Lainnya</h2>
+          <span />
+        </div>
+        <div className="landing-other-grid">
+          <Link className="landing-other-card landing-other-admin" href="/admin">
+            <span className="landing-other-icon">
+              <img src="/assets/icon-full.webp" alt="" width="44" height="44" loading="lazy" decoding="async" />
+            </span>
+            <span className="landing-other-copy">
+              <strong>SIPEDAS ADMIN</strong>
+              <span>Kelola data dan administrasi</span>
+            </span>
+            <Icon name="chevronRight" className="landing-other-arrow" />
+          </Link>
+          <Link className="landing-other-card landing-other-view" href="/cctv">
+            <span className="landing-other-icon">
+              <img src="/assets/cctv.png" alt="" width="44" height="44" loading="lazy" decoding="async" />
+            </span>
+            <span className="landing-other-copy">
+              <strong>SIPEDAS VIEW</strong>
+              <span>Pantau kamera CCTV</span>
+            </span>
+            <Icon name="chevronRight" className="landing-other-arrow" />
+          </Link>
+        </div>
+      </section>
 
     </main>
   );

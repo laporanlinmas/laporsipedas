@@ -567,6 +567,110 @@ svg {
   color: var(--text);
 }
 
+.landing-other {
+  position: relative;
+  z-index: 1;
+  margin-top: 34px;
+}
+
+.landing-other-heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 13px;
+}
+
+.landing-other-heading h2 {
+  color: var(--mid);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.landing-other-heading span {
+  height: 1px;
+  flex: 1;
+  background: var(--border-strong);
+}
+
+.landing-other-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px;
+}
+
+.landing-other-card {
+  --other-accent: var(--tone-blue);
+  display: flex;
+  min-width: 0;
+  min-height: 78px;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.landing-other-admin { --other-accent: var(--tone-amber); }
+.landing-other-view { --other-accent: var(--tone-teal); }
+
+.landing-other-card:hover,
+.landing-other-card:focus-visible {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--other-accent) 45%, transparent);
+  box-shadow: var(--shadow-pop);
+}
+
+.landing-other-icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  place-items: center;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--other-accent) 13%, transparent);
+  color: var(--other-accent);
+}
+
+.landing-other-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.landing-other-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.landing-other-copy strong {
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 800;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.landing-other-copy > span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.landing-other-arrow {
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+}
+
 .landing-card:hover .landing-copy strong {
   color: var(--accent);
 }
@@ -3327,6 +3431,24 @@ svg {
   color: var(--blue-bright);
 }
 
+.viewer-open {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #e8eefb;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.viewer-open:hover { background: rgba(255, 255, 255, 0.12); }
+.viewer-open svg { width: 14px; height: 14px; }
+
 /* Header dibuat setipis mungkin agar area kamera 최대한 luas. */
 .viewer-bar .back-link,
 .viewer-bar .btn-secondary {
@@ -3394,6 +3516,20 @@ svg {
   line-height: 1.5;
 }
 
+.viewer-retry-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 13px;
+  border: 1px solid rgba(77, 141, 251, 0.35);
+  border-radius: 8px;
+  color: #a8c8ff;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.viewer-retry-link svg { width: 15px; height: 15px; }
+
 /* ── 15. Responsif ──────────────────────────────────────────────── */
 
 @media (max-width: 940px) {
@@ -3420,6 +3556,10 @@ svg {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
+
+  .landing-other { margin-top: 28px; }
+  .landing-other-grid { gap: 10px; }
+  .landing-other-card { min-height: 74px; gap: 10px; padding: 11px; }
 
   .landing-card {
     gap: 12px;
@@ -3520,31 +3660,70 @@ svg {
 }
 
 @media (max-width: 430px) {
-  .landing-card {
-    flex-direction: column;
-    justify-content: center;
+  .landing {
+    --pad-y: 20px;
+  }
+
+  .landing-header { margin-bottom: 14px; }
+
+  .landing-hero { margin-bottom: 16px; }
+
+  .landing-brand {
     gap: 9px;
-    min-height: 142px;
-    padding: 14px 10px;
-    text-align: center;
+    margin-bottom: 14px;
+  }
+
+  .landing-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+  }
+
+  .landing-program { margin-bottom: 8px; }
+  .landing-heading { font-size: 1.15rem; }
+  .landing-region { font-size: 1.55rem; }
+
+  .landing-card {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 8px;
+    min-height: 72px;
+    padding: 9px;
+    text-align: left;
   }
 
   .landing-ico {
-    flex-basis: 68px;
-    width: 68px;
-    height: 68px;
+    flex-basis: 42px;
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
   }
 
   .landing-copy {
-    width: 100%;
-    align-items: center;
+    align-items: flex-start;
+    gap: 3px;
   }
 
   .landing-copy strong {
     max-width: 100%;
+    font-size: 0.76rem;
     overflow-wrap: break-word;
     word-break: normal;
   }
+
+  .landing-other { margin-top: 18px; }
+  .landing-other-heading { margin-bottom: 9px; }
+  .landing-other-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .landing-other-card { min-height: 58px; gap: 7px; padding: 8px; }
+  .landing-other-icon { width: 34px; height: 34px; flex-basis: 34px; border-radius: 9px; }
+  .landing-other-copy strong { font-size: 0.65rem; }
+  .landing-other-copy > span { display: none; }
+  .landing-other-arrow { width: 13px; height: 13px; }
+
+  .viewer-bar { gap: 6px; }
+  .viewer-title { font-size: 0.65rem; }
+  .viewer-open { min-height: 30px; padding: 5px 8px; }
+  .viewer-open span { display: none; }
 }
 
 @media (max-width: 380px) {

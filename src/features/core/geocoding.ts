@@ -4,7 +4,7 @@ import type { GeoAddress } from './types';
  * Reverse geocoding ringan (OpenStreetMap / Nominatim).
  *
  * - Cache in-memory dengan TTL agar foto berdekatan tidak memanggil API berulang.
- * - Maksimal tiga percobaan zoom agar hemat kuota & cepat.
+ * - Satu permintaan pada zoom detail agar hasil konsisten dan hemat kuota.
  * - Selalu mengembalikan nilai (fallback ke koordinat) supaya watermark
  *   tidak pernah menggantung.
  */
@@ -12,54 +12,79 @@ import type { GeoAddress } from './types';
 const ENDPOINT = 'https://nominatim.openstreetmap.org/reverse';
 const TTL_MS = 10 * 60 * 1000;
 const TIMEOUT_MS = 5_000;
-const ZOOM_CHAIN = [18, 17, 16];
+const REQUEST_INTERVAL_MS = 1_000;
+const DETAIL_ZOOM = 18;
 
 interface NominatimResponse {
   address?: Record<string, string>;
   namedetails?: { name?: string };
+  name?: string;
   display_name?: string;
 }
 
 const cache = new Map<string, { at: number; value: GeoAddress }>();
 const inFlight = new Map<string, Promise<GeoAddress>>();
+let requestQueue: Promise<void> = Promise.resolve();
+let nextRequestAt = 0;
 
-function cacheKey(lat: number, lng: number): string {
-  return `${lat.toFixed(5)},${lng.toFixed(5)}`;
+function scheduleRequest<T>(request: () => Promise<T>): Promise<T> {
+  const scheduled = requestQueue.then(async () => {
+    const delay = Math.max(0, nextRequestAt - Date.now());
+    if (delay) await new Promise<void>(resolve => setTimeout(resolve, delay));
+    nextRequestAt = Date.now() + REQUEST_INTERVAL_MS;
+    return request();
+  });
+  requestQueue = scheduled.then(() => undefined, () => undefined);
+  return scheduled;
 }
 
-function buildFromAddress(road: string | null, houseNumber: string | null, address: Record<string, string>): GeoAddress {
+function cacheKey(lat: number, lng: number): string {
+  return `${lat.toFixed(6)},${lng.toFixed(6)}`;
+}
+
+function appendPart(parts: string[], seen: Set<string>, value: string | undefined, label = '') {
+  const name = value?.trim();
+  if (!name) return;
+
+  const key = name.toLocaleLowerCase('id');
+  if (seen.has(key)) return;
+  seen.add(key);
+
+  const alreadyLabeled = /^(desa|kelurahan|kel\.?|kecamatan|kec\.?|kabupaten|kab\.?|kota|provinsi|dukuh|dusun|lingkungan)\b/i.test(name);
+  parts.push(label && !alreadyLabeled ? `${label} ${name}` : name);
+}
+
+function buildFromAddress(
+  road: string | null,
+  houseNumber: string | null,
+  address: Record<string, string>,
+  placeName?: string,
+): GeoAddress {
   const parts: string[] = [];
-  if (road) parts.push(houseNumber ? `${road} No.${houseNumber}` : road);
-
-  const hamlet = address.hamlet || address.allotments || address.neighbourhood || address.quarter;
-  if (hamlet && hamlet !== road) parts.push(`Dukuh ${hamlet}`);
-
-  const village = address.village || address.town || address.suburb;
-  if (village) parts.push(`Desa ${village}`);
-
-  const district = address.subdistrict || address.city_district;
-  if (district) parts.push(`Kec. ${district}`);
-
-  const city = address.city || address.county || address.regency || address.municipality;
-  if (city) parts.push(city);
-  if (address.state) parts.push(address.state);
-  parts.push('Indonesia');
+  const seen = new Set<string>();
+  appendPart(parts, seen, road ? (houseNumber ? `${road} No.${houseNumber}` : road) : undefined);
+  appendPart(parts, seen, placeName);
+  appendPart(parts, seen, address.hamlet || address.allotments, 'Dukuh');
+  appendPart(parts, seen, address.neighbourhood || address.quarter, 'Lingkungan');
+  appendPart(parts, seen, address.village, 'Desa');
+  appendPart(parts, seen, address.suburb, 'Kelurahan');
+  appendPart(parts, seen, address.subdistrict || address.city_district || address.district, 'Kec.');
+  appendPart(parts, seen, address.town);
+  appendPart(parts, seen, address.city, 'Kota');
+  appendPart(parts, seen, address.municipality);
+  appendPart(parts, seen, address.regency || address.county, 'Kab.');
+  appendPart(parts, seen, address.state_district, 'Kab.');
+  appendPart(parts, seen, address.state);
+  appendPart(parts, seen, address.postcode, 'Kode Pos');
+  appendPart(parts, seen, address.country || 'Indonesia');
 
   return { full: parts.join(', '), road: road || '', parts };
 }
 
 function buildFallback(lat: number, lng: number, address?: Record<string, string>): GeoAddress {
   if (address) {
-    const parts: string[] = [];
-    const village = address.village || address.town || address.suburb;
-    if (village) parts.push(village);
-    const district = address.subdistrict || address.city_district;
-    if (district) parts.push(`Kec. ${district}`);
-    const city = address.city || address.county || address.regency;
-    if (city) parts.push(city);
-    if (address.state) parts.push(address.state);
-    parts.push('Indonesia');
-    if (parts.length > 1) return { full: parts.join(', '), road: '', parts };
+    const result = buildFromAddress(null, null, address);
+    if (result.parts.length > 1) return result;
   }
   return { full: `${lat.toFixed(5)}, ${lng.toFixed(5)}, Indonesia`, road: '', parts: [] };
 }
@@ -76,48 +101,48 @@ function extractRoad(data: NominatimResponse): string | null {
     const value = address[key];
     if (value) return value;
   }
-  if (data.namedetails?.name) return data.namedetails.name;
-  const head = (data.display_name || '').split(',')[0]?.trim();
-  if (head && !/^\d+\.?\d*$/.test(head) && head.length > 3) return head;
   return null;
 }
 
-async function fetchZoom(lat: number, lng: number, zoom: number, signal: AbortSignal) {
-  const url =
-    `${ENDPOINT}?format=jsonv2&lat=${lat}&lon=${lng}&zoom=${zoom}` +
-    `&addressdetails=1&namedetails=1&accept-language=id`;
-  const response = await fetch(url, { signal, headers: { Accept: 'application/json' } });
+async function fetchReverse(lat: number, lng: number, signal: AbortSignal) {
+  const params = new URLSearchParams({
+    format: 'jsonv2',
+    lat: String(lat),
+    lon: String(lng),
+    zoom: String(DETAIL_ZOOM),
+    addressdetails: '1',
+    namedetails: '1',
+    'accept-language': 'id-ID,id,en',
+  });
+  const response = await fetch(`${ENDPOINT}?${params}`, {
+    signal,
+    headers: { Accept: 'application/json' },
+  });
   if (!response.ok) throw new Error(`nominatim ${response.status}`);
   return (await response.json()) as NominatimResponse;
 }
 
 async function resolve(lat: number, lng: number): Promise<GeoAddress> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
   try {
-    let last: NominatimResponse | null = null;
-    for (const zoom of ZOOM_CHAIN) {
+    const data = await scheduleRequest(async () => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
       try {
-        const data = await fetchZoom(lat, lng, zoom, controller.signal);
-        last = data;
-        const road = extractRoad(data);
-        if (road) return buildFromAddress(road, data.address?.house_number || null, data.address || {});
-      } catch {
-        /* coba zoom berikutnya */
+        return await fetchReverse(lat, lng, controller.signal);
+      } finally {
+        clearTimeout(timer);
       }
-      if (controller.signal.aborted) break;
-    }
-    return buildFallback(lat, lng, last?.address);
+    });
+    const address = data.address || {};
+    const placeName = data.namedetails?.name || data.name;
+    return buildFromAddress(extractRoad(data), address.house_number || null, address, placeName);
   } catch {
     return buildFallback(lat, lng);
-  } finally {
-    clearTimeout(timer);
   }
 }
 
 export function reverseGeocode(lat: number, lng: number): Promise<GeoAddress> {
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
     return Promise.resolve(buildFallback(0, 0));
   }
 

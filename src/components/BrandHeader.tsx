@@ -1,17 +1,15 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
 import Icon from './Icon';
 import { useApp, useSettingsVisibility } from '@/features/core/AppContext';
 import { APP_NAME, APP_TAGLINE } from '@/lib/constants';
 
 /**
  * Header aplikasi — seragam untuk semua kategori.
- * Tautan CCTV hanya ditampilkan pada alur pedestrian.
  */
 export default function BrandHeader() {
-  const { flow, category, settings, toggleTheme, online } = useApp();
+  const { category, settings, toggleTheme, online } = useApp();
   const { setShowSettings } = useSettingsVisibility();
 
   return (
@@ -26,12 +24,6 @@ export default function BrandHeader() {
           )}
         </div>
         <div className="hdr-actions">
-          {flow === 'pedestrian' && (
-            <Link className="hdr-link" href="/cctv" title="Lihat kamera CCTV">
-              <Icon name="video" />
-              <span>CCTV</span>
-            </Link>
-          )}
           <button
             type="button"
             className="icon-btn"

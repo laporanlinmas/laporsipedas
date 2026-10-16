@@ -47,7 +47,7 @@ fitur terkait dan terlihat di **Pengaturan → Info Sistem → Status server**.
 | `GOOGLE_SERVICE_ACCOUNT_JSON` | Cadangan bila OAuth2 tidak tersedia | Alternatif |
 | `APPS_SCRIPT_URL` | Web App Apps Script (opsional, lebih cepat) | Tidak |
 | `DEVELOPER_EMAIL` | Email yang diberi akses writer folder Drive | Tidak |
-| `NEXT_PUBLIC_CCTV_URL` | Situs CCTV untuk `/cctv` | Tidak |
+| `CCTV_URL` | Situs CCTV untuk `/cctv` | Tidak |
 
 > Service account **tidak** punya kuota penyimpanan Drive. Untuk slider file yang
 > aktif, pakai OAuth2 refresh token.

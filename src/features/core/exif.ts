@@ -101,19 +101,23 @@ function parseTiff(view: DataView, base: number): ExifData | null {
         gps.lng = [readRatio(at), readRatio(at + 8), readRatio(at + 16)];
       }
     }
-    const lat = toDecimal(gps.lat as number[] | undefined, gps.latRef as string | undefined);
-    const lng = toDecimal(gps.lng as number[] | undefined, gps.lngRef as string | undefined);
+    const lat = toDecimal(gps.lat as number[] | undefined, gps.latRef as string | undefined, 90);
+    const lng = toDecimal(gps.lng as number[] | undefined, gps.lngRef as string | undefined, 180);
     if (lat !== null && lng !== null) result.gps = { lat, lng };
   }
 
   return Object.keys(result).length ? result : null;
 }
 
-function toDecimal(dms: number[] | undefined, ref: string | undefined): number | null {
+function toDecimal(dms: number[] | undefined, ref: string | undefined, maxDegrees: number): number | null {
   if (!dms || dms.length < 3) return null;
+  const direction = ref?.toUpperCase();
+  if (!['N', 'S', 'E', 'W'].includes(direction || '')) return null;
+  if (dms.some(value => !Number.isFinite(value) || value < 0)) return null;
+  if (dms[0] > maxDegrees || dms[1] >= 60 || dms[2] >= 60) return null;
   const value = dms[0] + dms[1] / 60 + dms[2] / 3600;
-  if (!Number.isFinite(value)) return null;
-  return Number((ref === 'S' || ref === 'W' ? -value : value).toFixed(6));
+  if (value > maxDegrees) return null;
+  return Number((direction === 'S' || direction === 'W' ? -value : value).toFixed(6));
 }
 
 export function nowStamp(): string {
