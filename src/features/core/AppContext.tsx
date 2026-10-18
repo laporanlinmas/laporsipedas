@@ -651,5 +651,3 @@ export function useSettingsVisibility() {
   return context;
 }
 
-/** Alias kompatibilitas dengan penamaan lama. */
-export const useAppContext = useApp;

@@ -15,23 +15,13 @@ type TesseractWorker = {
 };
 
 let workerPromise: Promise<TesseractWorker | null> | null = null;
-let progressListener: ((message: string) => void) | null = null;
-
-export function onOcrProgress(listener: ((message: string) => void) | null) {
-  progressListener = listener;
-}
 
 async function getWorker(): Promise<TesseractWorker | null> {
   if (workerPromise) return workerPromise;
   workerPromise = (async () => {
     try {
       const { createWorker } = await import('tesseract.js');
-      const worker = (await createWorker('eng', 1, {
-        logger: message => {
-          if (message.status === 'recognizing text') return;
-          progressListener?.(`OCR: ${message.status}`);
-        },
-      })) as unknown as TesseractWorker;
+      const worker = (await createWorker('eng', 1)) as unknown as TesseractWorker;
       return worker;
     } catch (error) {
       console.warn('[ocr] mesin OCR gagal dimuat', error);

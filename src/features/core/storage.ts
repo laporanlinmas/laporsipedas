@@ -120,27 +120,6 @@ export async function savePhoto(scope: Scope, photo: PhotoData): Promise<void> {
   }
 }
 
-export async function updatePhoto(scope: Scope, photo: PhotoData): Promise<void> {
-  const db = await openStorage();
-  if (!db || !photo.id) return;
-  try {
-    const tx = db.transaction(STORE_PHOTOS, 'readwrite');
-    const store = tx.objectStore(STORE_PHOTOS);
-    const existing = await request<StoredPhoto | undefined>(store.get(photo.id));
-    await request(
-      store.put({
-        ...existing,
-        ...photo,
-        scope,
-        processing: false,
-      } as StoredPhoto),
-    );
-    await transactionDone(tx);
-  } catch {
-    /* penyimpanan lokal bersifat best-effort */
-  }
-}
-
 export async function deletePhoto(id: string): Promise<void> {
   const db = await openStorage();
   if (!db || !id) return;

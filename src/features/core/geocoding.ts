@@ -166,5 +166,3 @@ export function reverseGeocode(lat: number, lng: number): Promise<GeoAddress> {
   return task;
 }
 
-/** Alias kompatibilitas; sama dengan reverseGeocode. */
-export const reverseGeocodeForceStreet = reverseGeocode;

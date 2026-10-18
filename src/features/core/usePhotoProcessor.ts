@@ -184,8 +184,14 @@ function formatExifTimestamp(raw: string): string {
 /** Deteksi koordinat dari teks pada foto galeri (butuh OCR — dimuat saat dipakai). */
 async function detectGalleryGps(file: File): Promise<{ lat: number; lng: number } | null> {
   try {
-    const { extractOcrCoordinates } = await import('../pedestrian/ocr');
-    return await extractOcrCoordinates(file);
+    const { extractOcrCoordinates, releaseOcrWorker } = await import('../pedestrian/ocr');
+    try {
+      return await extractOcrCoordinates(file);
+    } finally {
+      // Worker OCR menahan +-10 MB RAM. Dilepas tiap foto selesai supaya HP
+      // tidak berat (lag) saat memproses banyak foto beruntun.
+      void releaseOcrWorker();
+    }
   } catch (error) {
     console.warn('[ocr] tidak dapat memuat mesin OCR', error);
     return null;

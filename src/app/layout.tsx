@@ -97,7 +97,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 if ('serviceWorker' in navigator) {
                   window.addEventListener('load', function() {
                     navigator.serviceWorker.register('/sw.js').catch(function(err) {
-                      console.log('SW registration failed: ', err);
+                      console.warn('[sw] pendaftaran service worker gagal', err);
                     });
                   });
                 }

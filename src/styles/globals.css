@@ -160,6 +160,13 @@ html.light-mode {
 html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
+  /* Latar <html> ikut warna tema (sama dengan <body>).
+     Tanpa ini, bagian tepi bawah yang tidak tertutup <body> — safe-area
+     iPhone (viewport-fit=cover) dan area over-scroll Android — memakai
+     latar default browser yang putih. Akibatnya muncul garis putih di
+     paling bawah layar, dan di mode gelap kontrasnya sangat mencolok. */
+  background: var(--navy);
+  overscroll-behavior-y: none;
 }
 
 body {
@@ -717,6 +724,9 @@ svg {
   position: relative;
   isolation: isolate;
   min-height: 100dvh;
+  /* Latar sendiri, bukan transparan: area di bawah bilah aksi (yang
+     `position: sticky`) tidak boleh memperlihatkan latar kosong. */
+  background: var(--navy);
 }
 
 .shell-inner {
@@ -784,14 +794,6 @@ svg {
   backdrop-filter: blur(10px);
 }
 
-.page-title {
-  overflow: hidden;
-  font-size: 0.95rem;
-  font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .form-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.95fr);
@@ -848,8 +850,7 @@ svg {
   gap: 8px;
 }
 
-.icon-btn,
-.hdr-link {
+.icon-btn {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -865,21 +866,12 @@ svg {
   transition: transform 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 
-.icon-btn svg,
-.hdr-link svg {
+.icon-btn svg {
   width: 17px;
   height: 17px;
 }
 
-.hdr-link span {
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.icon-btn:hover,
-.hdr-link:hover {
+.icon-btn:hover {
   transform: translateY(-1px);
   border-color: var(--blue-dim);
   color: var(--blue-bright);
@@ -2223,6 +2215,9 @@ svg {
   align-items: center;
   justify-content: center;
   gap: 9px;
+  /* Di layar lebar tombol dibuat sedikit lebih panjang agar proporsional
+     dan mudah ditekan (label "KIRIM LAPORAN" + ikon). */
+  min-width: 248px;
   min-height: 54px;
   padding: 14px 22px;
   border-radius: 16px;
@@ -3716,12 +3711,22 @@ svg {
     border-radius: 20px 20px 0 0;
   }
 
-  /* Di layar sempit pil tombol tetap menempel pada isinya, tidak melar
-     memenuhi lebar layar. */
+  /* Di layar sempit bar aksi penuh kiri-kanan: tombol hapus & kirim
+     sama-sama mudah dijangkau ibu jari, tanpa gradien full-lebar. */
   .submit-inner,
   .submit-hint {
-    width: auto;
+    width: 100%;
     max-width: 100%;
+  }
+
+  .submit-inner {
+    padding: 6px;
+    border-radius: 18px;
+  }
+
+  .btn-submit {
+    flex: 1 1 auto;
+    min-width: 0;
   }
 }
 
@@ -3815,10 +3820,6 @@ svg {
 @media (max-width: 380px) {
   .brand-title {
     font-size: 1.32rem;
-  }
-
-  .hdr-link span {
-    display: none;
   }
 }
 

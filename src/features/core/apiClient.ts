@@ -2,12 +2,6 @@
 
 /** Klien HTTP tipis dengan timeout, error terstruktur, dan pembatas paralelisme. */
 
-export interface ApiErrorShape {
-  success: false;
-  message: string;
-  code?: string;
-}
-
 export type ApiResult<T = Record<string, unknown>> = {
   success: boolean;
   message?: string;

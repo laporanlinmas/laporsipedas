@@ -79,14 +79,6 @@ export async function resolveUploadMode(scope: string): Promise<SignCache> {
   return signInFlight;
 }
 
-export function getCachedConfig(): ServerConfig | null {
-  return signCache?.config ?? null;
-}
-
-export function resetUploadModeCache() {
-  signCache = null;
-}
-
 async function requestSignature(scope: string, index: number): Promise<SignResponse> {
   const response = await apiFetch<SignResponse>(
     `/api/sign?scope=${encodeURIComponent(scope)}&index=${index}`,

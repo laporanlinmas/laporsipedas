@@ -30,12 +30,6 @@ export interface DraftSummary {
   dibuatPada: string | null;
 }
 
-export interface DraftDetail extends DraftSummary {
-  teks: string;
-  photos: DraftPhotoAsset[];
-  exifMeta: DraftPhotoMeta[];
-}
-
 function toNumber(value: unknown, fallback = 0): number {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
