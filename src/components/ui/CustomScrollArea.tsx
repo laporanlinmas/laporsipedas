@@ -19,13 +19,26 @@ export default function CustomScrollArea({
 }) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const scrollbarRef = useRef<HTMLDivElement>(null);
+  const thumbRef = useRef<HTMLSpanElement>(null);
+  const metricsRef = useRef({ maxScroll: 0, thumbTravel: 0 });
   const dragRef = useRef<{ pointerId: number; startY: number; startScroll: number } | null>(null);
   const [metrics, setMetrics] = useState({
     thumbHeight: 0,
-    thumbTop: 0,
     maxScroll: 0,
     thumbTravel: 0,
   });
+
+  const syncScrollPosition = () => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    const { maxScroll, thumbTravel } = metricsRef.current;
+    const thumbTop = maxScroll ? (viewport.scrollTop / maxScroll) * thumbTravel : 0;
+    if (thumbRef.current) {
+      thumbRef.current.style.transform = `translateY(${thumbTop}px)`;
+    }
+    scrollbarRef.current?.setAttribute('aria-valuenow', String(Math.round(viewport.scrollTop)));
+  };
 
   useEffect(() => {
     const viewport = viewportRef.current;
@@ -38,31 +51,35 @@ export default function CustomScrollArea({
         ? Math.max(24, (viewportHeight * viewportHeight) / viewport.scrollHeight)
         : viewportHeight;
       const thumbTravel = Math.max(0, viewportHeight - thumbHeight);
-      const thumbTop = maxScroll ? (viewport.scrollTop / maxScroll) * thumbTravel : 0;
+      metricsRef.current = { maxScroll, thumbTravel };
       setMetrics(previous => {
-        const next = { thumbHeight, thumbTop, maxScroll, thumbTravel };
+        const next = { thumbHeight, maxScroll, thumbTravel };
         return previous.thumbHeight === next.thumbHeight &&
-          previous.thumbTop === next.thumbTop &&
           previous.maxScroll === next.maxScroll &&
           previous.thumbTravel === next.thumbTravel
           ? previous
           : next;
       });
+      syncScrollPosition();
     };
 
     update();
-    viewport.addEventListener('scroll', update, { passive: true });
+    viewport.addEventListener('scroll', syncScrollPosition, { passive: true });
     window.addEventListener('resize', update);
     const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update);
     observer?.observe(viewport);
     if (contentRef.current) observer?.observe(contentRef.current);
 
     return () => {
-      viewport.removeEventListener('scroll', update);
+      viewport.removeEventListener('scroll', syncScrollPosition);
       window.removeEventListener('resize', update);
       observer?.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    syncScrollPosition();
+  }, [metrics]);
 
   const scrollTo = (top: number) => {
     if (viewportRef.current) {
@@ -130,6 +147,7 @@ export default function CustomScrollArea({
       </div>
       {metrics.maxScroll > 0 && (
         <div
+          ref={scrollbarRef}
           className="custom-scrollbar"
           role="scrollbar"
           aria-label={`Gulir ${label.toLowerCase()}`}
@@ -150,8 +168,9 @@ export default function CustomScrollArea({
           }}
         >
           <span
+            ref={thumbRef}
             className="custom-scroll-thumb"
-            style={{ height: metrics.thumbHeight, transform: `translateY(${metrics.thumbTop}px)` }}
+            style={{ height: metrics.thumbHeight, transform: 'translateY(0)' }}
           />
         </div>
       )}

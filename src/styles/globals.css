@@ -159,14 +159,14 @@ html.light-mode {
 
 html {
   -webkit-text-size-adjust: 100%;
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
   /* Latar <html> ikut warna tema (sama dengan <body>).
      Tanpa ini, bagian tepi bawah yang tidak tertutup <body> — safe-area
      iPhone (viewport-fit=cover) dan area over-scroll Android — memakai
      latar default browser yang putih. Akibatnya muncul garis putih di
      paling bawah layar, dan di mode gelap kontrasnya sangat mencolok. */
   background: var(--navy);
-  overscroll-behavior-y: none;
+  overscroll-behavior-y: auto;
 }
 
 body {
@@ -179,7 +179,6 @@ body {
   background-image:
     radial-gradient(1100px 620px at 8% -8%, var(--blue-pale), transparent 62%),
     radial-gradient(900px 520px at 104% 4%, var(--gold-pale), transparent 58%);
-  background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
@@ -279,7 +278,6 @@ svg {
      Tambahan --safe-bottom menjaga ruang lega di perangkat ber-notch. */
   padding: var(--pad-y) max(24px, calc((100vw - 1040px) / 2))
     calc(var(--pad-y) + var(--safe-bottom));
-  overflow: hidden;
   background:
     radial-gradient(ellipse 80% 50% at 50% -10%, rgba(37, 99, 235, 0.1), transparent),
     radial-gradient(ellipse 60% 40% at 85% 110%, rgba(217, 154, 43, 0.06), transparent);
@@ -1557,7 +1555,8 @@ svg {
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  overscroll-behavior: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
