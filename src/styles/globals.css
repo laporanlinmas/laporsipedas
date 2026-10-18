@@ -2194,6 +2194,11 @@ svg {
   padding: 12px 0 calc(12px + var(--safe-bottom));
   background: none;
   pointer-events: none;
+  /* Tumpuk vertikal + rata tengah: pil tombol duduk di tengah layar,
+     menempel pada isinya, bukan melebar atau merapat ke tepi. */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .submit-inner {
