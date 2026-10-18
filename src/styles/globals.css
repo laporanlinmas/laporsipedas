@@ -278,32 +278,33 @@ svg {
     radial-gradient(ellipse 60% 40% at 85% 110%, rgba(217, 154, 43, 0.06), transparent);
 }
 
-.landing-ornament {
+/* Latar batik — dipakai bersama oleh menu utama dan seluruh halaman
+   kategori laporan (lihat components/BatikBackdrop.tsx). Repetisi motif
+   `pointer-events: none` supaya tidak pernah menghalangi klik pengguna. */
+.batik-backdrop {
   position: absolute;
-  pointer-events: none;
+  inset: 0;
   z-index: 0;
-  background-image: url("/assets/batik-ornament.svg");
-  background-repeat: no-repeat;
-  background-size: cover;
-  opacity: 0.1;
+  pointer-events: none;
+  overflow: hidden;
 }
 
-.landing-ornament-pattern {
+.batik-backdrop-pattern {
   position: absolute;
-  z-index: 0;
-  pointer-events: none;
   inset: 0;
   background-image: url("/assets/batik-ornament.svg");
   background-repeat: repeat;
   background-size: 420px auto;
-  opacity: 0.035;
+  /* Ornamen asli berwarna hijau tua. Di mode gelap warnanya nyaris
+     menghilang di atas latar biru-abang, jadi dibalik menjadi putih
+     supaya tekstur batik tetap terbaca sebagai pahatan, bukan noise. */
+  filter: brightness(0) invert(1);
+  opacity: 0.05;
 }
 
-.landing-wash {
+.batik-backdrop-wash {
   position: absolute;
   inset: 0;
-  pointer-events: none;
-  z-index: 0;
   background:
     radial-gradient(ellipse 42% 38% at 0% 0%, rgba(31, 78, 60, 0.035), transparent 72%),
     radial-gradient(ellipse 40% 36% at 100% 100%, rgba(184, 131, 42, 0.03), transparent 72%);
@@ -710,10 +711,17 @@ svg {
 /* ── 4. Kerangka halaman laporan ────────────────────────────────── */
 
 .shell {
+  /* `relative` menjadikan shell sebagai acuan posisi latar batik
+     (BatikBackdrop). `isolation: isolate` menahan lapisan dekoratif
+     supaya tidak pernah bercampur dengan z-index di luar halaman. */
+  position: relative;
+  isolation: isolate;
   min-height: 100dvh;
 }
 
 .shell-inner {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   width: min(100%, 1240px);
@@ -3814,8 +3822,16 @@ html.light-mode .landing {
     radial-gradient(ellipse 60% 40% at 85% 110%, rgba(180, 83, 9, 0.04), transparent);
 }
 
-html.light-mode .landing-ornament {
-  opacity: 0.06;
+html.light-mode .batik-backdrop-pattern {
+  /* Di mode terang warna asli (hijau tua) dipakai apa adanya. */
+  filter: none;
+  opacity: 0.08;
+}
+
+html.light-mode .batik-backdrop-wash {
+  background:
+    radial-gradient(ellipse 42% 38% at 0% 0%, rgba(31, 78, 60, 0.05), transparent 72%),
+    radial-gradient(ellipse 40% 36% at 100% 100%, rgba(184, 131, 42, 0.045), transparent 72%);
 }
 
 html.light-mode .landing-card {

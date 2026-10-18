@@ -11,6 +11,7 @@ import MapPickerModal from '@/components/MapPickerModal';
 import StructuredForm, { useStructuredWatermarkContext } from './StructuredForm';
 import { useStructuredSubmit } from './useStructuredSubmit';
 import { useApp } from '../core/AppContext';
+import BatikBackdrop from '@/components/BatikBackdrop';
 
 /** Halaman laporan kategori terstruktur: form + foto → Firebase + Cloudinary. */
 export default function StructuredReportPage() {
@@ -20,6 +21,7 @@ export default function StructuredReportPage() {
 
   return (
     <div className="shell">
+      <BatikBackdrop />
       <div className="shell-inner">
         <BrandHeader />
 

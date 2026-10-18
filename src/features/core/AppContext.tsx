@@ -190,21 +190,35 @@ export function AppProvider({
     steps: [],
   });
 
-  const bootstrapped = useRef(false);
+  /* Nomor urut pemuatan. Setiap kali efek berjalan (mount baru atau
+     pergantian kategori) nomor dinaikkan; hanya eksekusi terakhir yang
+     boleh menulis state. Tanpa ini, React StrictMode yang memanggil efek
+     dua kali akan membatalkan pemuatan pertama DAN memblokir yang kedua
+     (jawaban lama memakai flag `bootstrapped`) — akibatnya `ready` tak
+     pernah true dan isian form tidak pernah tersimpan. */
+  const bootstrapRun = useRef(0);
+  /** true setelah pemuatan awal selesai — dipakai sebagai penjaga saat
+   *  menyimpan sesi supaya data yang baru dipulihkan tidak tertimpa. */
+  const readyRef = useRef(false);
   const textSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const photosRef = useRef<PhotoData[]>([]);
   photosRef.current = photos;
 
   /* ── Pemuatan awal (idempoten, aman untuk StrictMode) ─────────── */
   useEffect(() => {
-    if (bootstrapped.current) return;
-    bootstrapped.current = true;
+    const run = ++bootstrapRun.current;
+    const active = () => bootstrapRun.current === run;
 
     setSettings(readSettings());
     preloadWatermarkLogo();
     setOnline(navigator.onLine);
 
-    let cancelled = false;
+    /* Netralkan sisa kategori sebelumnya (pengaman bila provider dipakai
+       ulang tanpa remount). Sesi yang tersimpan dipulihkan di bawah,
+       jadi isian kategori ini tetap utuh. */
+    if (flow === 'structured') {
+      setReport({ ...emptyStructuredReport, kegiatan: category.name });
+    }
 
     void (async () => {
       const sessionKey = SESSION_PREFIX + scope;
@@ -213,7 +227,7 @@ export function AppProvider({
 
       try {
         const raw = sessionStorage.getItem(sessionKey);
-        if (raw && !cancelled) {
+        if (raw && active()) {
           const parsed = JSON.parse(raw) as SessionSnapshot;
           if (flow === 'structured') {
             setReport(previous => ({ ...previous, ...parsed.report, kegiatan: category.name }));
@@ -227,7 +241,7 @@ export function AppProvider({
         /* abaikan session rusak */
       }
 
-      if (flow === 'structured') {
+      if (flow === 'structured' && active()) {
         setReport(previous =>
           previous.tanggal ? previous : { ...previous, tanggal: toDateInputValue() },
         );
@@ -235,13 +249,15 @@ export function AppProvider({
 
       if (flow === 'pedestrian') {
         const savedText = await metaGet<string>(textKey);
-        if (savedText && !cancelled) setReportTextState(savedText);
+        if (savedText && active()) setReportTextState(savedText);
       }
 
       const saved = await loadPhotos(scope, MAX_PHOTOS);
-      if (!cancelled && saved.length) setPhotos(saved.slice(0, MAX_PHOTOS));
+      if (!active()) return;
+      if (saved.length) setPhotos(saved.slice(0, MAX_PHOTOS));
       void pruneScope(scope, MAX_PHOTOS + 2);
-      if (!cancelled) setReady(true);
+      readyRef.current = true;
+      setReady(true);
     })();
 
     const goOnline = () => setOnline(true);
@@ -250,7 +266,6 @@ export function AppProvider({
     window.addEventListener('offline', goOffline);
 
     return () => {
-      cancelled = true;
       window.removeEventListener('online', goOnline);
       window.removeEventListener('offline', goOffline);
     };
@@ -284,18 +299,51 @@ export function AppProvider({
     }
   }, [settings]);
 
+  /* Simpan sesi per kategori. Debounce 250 ms supaya mengetik tidak
+     menulis ke storage tiap ketikan. */
+  const saveSession = useCallback((scopeKey: string, value: SessionSnapshot) => {
+    if (typeof window === 'undefined') return;
+    try {
+      sessionStorage.setItem(SESSION_PREFIX + scopeKey, JSON.stringify(value));
+    } catch {
+      /* abaikan */
+    }
+  }, []);
+
   useEffect(() => {
     if (!ready || typeof window === 'undefined') return;
     const timer = setTimeout(() => {
-      try {
-        const snapshot: SessionSnapshot = { report, location, coords };
-        sessionStorage.setItem(SESSION_PREFIX + scope, JSON.stringify(snapshot));
-      } catch {
-        /* abaikan */
-      }
+      saveSession(scope, { report, location, coords });
     }, 250);
     return () => clearTimeout(timer);
-  }, [ready, scope, report, location, coords]);
+  }, [ready, scope, report, location, coords, saveSession]);
+
+  /* Simpan segera saat halaman ditinggalkan. Tanpa ini, isian terakhir
+     yang diketik < 250 ms sebelum pindah kategori bisa hilang.
+     Penjaga `readyRef` penting: React StrictMode memanggil efek ini
+     satu kali lagi tepat setelah mount — kalau tanpa penjaga, sesi yang
+     baru saja dipulihkan tertimpa isian kosong. */
+  const latestSession = useRef({ scope, report, location, coords });
+  latestSession.current = { scope, report, location, coords };
+
+  useEffect(() => {
+    const flush = () => {
+      if (!readyRef.current) return;
+      const current = latestSession.current;
+      saveSession(current.scope, {
+        report: current.report,
+        location: current.location,
+        coords: current.coords,
+      });
+    };
+
+    /* Muat ulang / tutup tab: browser tidak sempat menjalankan unmount. */
+    window.addEventListener('pagehide', flush);
+    return () => {
+      window.removeEventListener('pagehide', flush);
+      flush();
+    };
+  }, [saveSession]);
 
   const updateSettings = useCallback((patch: Partial<AppSettings>) => {
     setSettings(previous => {

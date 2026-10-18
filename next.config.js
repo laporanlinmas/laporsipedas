@@ -34,10 +34,17 @@ const nextConfig = {
   async headers() {
     return [
       {
+        // Halaman ini sengaja BOLEH ditampilkan di dalam iframe: dipakai
+        // menu "Input Laporan" pada dashboard SIPEDAS dan halaman pembungkus
+        // index.html. `SAMEORIGIN` membuat Chrome menampilkan
+        // "… refused to connect" sehingga aplikasinya tidak pernah termuat.
+        // `frame-ancestors *` mengizinkan semua origin (termasuk localhost
+        // saat dev) dan dibaca lebih dulu daripada X-Frame-Options.
         source: '/:path*',
         headers: [
           { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'X-Frame-Options', value: 'ALLOWALL' },
+          { key: 'Content-Security-Policy', value: 'frame-ancestors *' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'X-DNS-Prefetch-Control', value: 'on' },
         ],

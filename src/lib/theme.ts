@@ -7,19 +7,67 @@ export type ThemeMode = 'dark' | 'light';
 export const SETTINGS_KEY = 'sipedas:v5:settings';
 
 /**
- * Membaca preferensi tema dari localStorage.
- * Bawaan mutlak adalah 'dark' kecuali pengguna secara eksplisit memilih 'light'.
+ * Tema yang datang dari halaman induk (dashboard SIPEDAS) atau query param
+ * `?theme=`. Disimpan di modul — bukan di state — supaya SEMUA komponen
+ * (`useTheme`, komponen yang memanggil `applyThemeToDOM` langsung, dan skrip
+ * bootstrap di <head>) membaca sumber yang sama. Tanpa ini, komponen yang
+ * memanggil `getStoredTheme()` akan menimpa tema induk dengan bawaan gelap.
+ */
+let frameThemeOverride: ThemeMode | null = null;
+
+/** Baca tema dari query param `?theme=`. */
+export function readThemeParam(): ThemeMode | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const t = new URLSearchParams(window.location.search).get('theme');
+    return t === 'dark' || t === 'light' ? t : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Tetapkan tema dari halaman induk (atau lepaskan override dengan `null`).
+ * Dipanggil oleh ThemeFrameSync; langsung menerapkan ke DOM agar tampilan
+ * tidak menunggu render berikutnya.
+ */
+export function setFrameThemeOverride(theme: ThemeMode | null): void {
+  frameThemeOverride = theme;
+  if (theme) applyThemeToDOM(theme);
+}
+
+/**
+ * Membaca preferensi tema.
+ * Urutan: override halaman induk → `?theme=` → localStorage → sistem.
+ *
+ * NOTE: dulu bawaannya mutlak 'dark'. Sekarang mengikuti `prefers-color-scheme`
+ * supaya portal yang dibuka langsung di perangkat berTema terang tidak
+ * tampak seperti error.
  */
 export function getStoredTheme(): ThemeMode {
   if (typeof window === 'undefined') return 'dark';
+  if (frameThemeOverride) return frameThemeOverride;
+
+  const fromParam = readThemeParam();
+  if (fromParam) return fromParam;
+
   try {
     const raw = window.localStorage.getItem(SETTINGS_KEY);
-    if (!raw) return 'dark';
-    const parsed = JSON.parse(raw);
-    return parsed?.theme === 'light' ? 'light' : 'dark';
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed?.theme === 'light' || parsed?.theme === 'dark') return parsed.theme;
+    }
   } catch {
-    return 'dark';
+    /* abaikan */
   }
+
+  try {
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) return 'light';
+  } catch {
+    /* abaikan */
+  }
+
+  return 'dark';
 }
 
 /**
@@ -92,6 +140,9 @@ export function useTheme() {
   const toggleTheme = useCallback(() => {
     const nextTheme: ThemeMode = theme === 'dark' ? 'light' : 'dark';
     setTheme(nextTheme);
+    // Pilihan manual pengguna menang: override dari halaman induk dilepas dan
+    // tema disimpan permanen.
+    setFrameThemeOverride(null);
     saveStoredTheme(nextTheme);
     applyThemeToDOM(nextTheme);
     window.dispatchEvent(new Event('themechange'));

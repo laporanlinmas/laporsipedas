@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import BatikBackdrop from './BatikBackdrop';
 import CategoryCard from './CategoryCard';
 import Icon from './Icon';
 import { APP_NAME, APP_TAGLINE, CATEGORIES } from '@/lib/constants';
@@ -16,9 +17,9 @@ export default function CategoryLanding() {
 
   return (
     <main className="landing">
-      {/* Ornamen batik dekoratif - menyatu dengan gradient */}
-      <div className="landing-ornament-pattern" aria-hidden="true" />
-      <div className="landing-wash" aria-hidden="true" />
+      {/* Ornamen batik dekoratif - menyatu dengan gradient. Komponen yang
+          sama dipakai di setiap halaman kategori laporan. */}
+      <BatikBackdrop />
 
       <div className="landing-header">
         <div className="landing-header-actions">

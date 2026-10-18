@@ -23,7 +23,7 @@ satu untuk semua kategori. Yang berbeda hanya isi formulir dan backend tujuan.
 
 ```bash
 npm install
-npm run dev      # pengembangan (http://localhost:3000)
+npm run dev      # pengembangan (port 3002)
 npm run build    # build produksi
 npm start        # jalankan hasil build
 npm run typecheck
@@ -142,6 +142,21 @@ src/
 IndexedDB `sipedas` (v3) dengan pemisahan per kategori, sehingga foto dari satu
 kategori tidak pernah muncul di kategori lain. Database lama `sipedas_cam_v1`
 dibuang otomatis. Teks pedestrian disimpan terpisah per sesi.
+
+Isian form terstruktur disimpan di `sessionStorage` dengan kunci per kategori
+(`sipedas:v5:session:<slug>`). Saat pindah kategori, sesi lama ditulis
+langsung ke storage sehingga isian kembali utuh saat kategori dibuka lagi —
+sementara kategori yang baru dibuka selalu tampil kosong, tidak mewarisi data
+kategori lain.
+
+## Latar batik
+
+`src/components/BatikBackdrop.tsx` menyatukan tekstur batik di menu utama dan
+keenam halaman kategori laporan. Lapisan ini murni dekoratif: `pointer-events:
+none` (tidak pernah menghalangi klik), `aria-hidden`, dan diposisikan
+absolut sehingga tidak menambah tinggi halaman. Di mode gelap ornamen hijau tua
+dibalik menjadi putih supaya tetap terbaca di atas latar biru-abang; di mode
+terang warna aslinya dipakai.
 
 ## Pengaturan aplikasi
 

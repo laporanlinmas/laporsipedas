@@ -13,6 +13,7 @@ import { useDraftManager } from './useDraftManager';
 import { usePedestrianSubmit } from './usePedestrianSubmit';
 import { usePedestrianWatermarkContext } from './watermarkContext';
 import { useApp } from '../core/AppContext';
+import BatikBackdrop from '@/components/BatikBackdrop';
 
 /** Halaman laporan pedestrian: tempel teks + foto → Google Drive + Spreadsheet. */
 export default function PedestrianReportPage() {
@@ -23,6 +24,7 @@ export default function PedestrianReportPage() {
 
   return (
     <div className="shell">
+      <BatikBackdrop />
       <div className="shell-inner">
         <BrandHeader />
 

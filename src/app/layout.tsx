@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Bebas_Neue, Great_Vibes, Inter } from 'next/font/google';
 import '@/styles/globals.css';
 import { APP_NAME, APP_TAGLINE } from '@/lib/constants';
+import ThemeFrameSync from '@/components/ThemeFrameSync';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -60,12 +61,28 @@ export const metadata: Metadata = {
 
 /**
  * Skrip kecil yang dipakai sebelum hydration agar tema tidak berkedip.
- * Bawaan mutlak: 'dark' (gelap). Mode terang hanya aktif bila dipilih eksplisit.
+ *
+ * Urutan prioritas:
+ *  1. `?theme=` — dikirim halaman induk (dashboard SIPEDAS) ketika aplikasi ini
+ *     ditampilkan di dalam iframe, supaya tema sudah benar sejak byte pertama.
+ *  2. Pilihan pengguna yang tersimpan di localStorage.
+ *  3. Preferensi sistem (`prefers-color-scheme`).
+ *  4. Bawaan aplikasi: gelap.
  *
  * `light-mode` hanya dipasang pada <html>; <body> belum ada saat skrip ini
  * jalan, sehingga menempel class di body akan membuat tema terlihat berkedip.
  */
-const themeBootstrap = `(function(){try{var r=localStorage.getItem('sipedas:v5:settings');var t=r?JSON.parse(r).theme:null;var light=t==='light';var d=document.documentElement;d.classList.toggle('light-mode',light);d.style.colorScheme=light?'light':'dark';}catch(e){}})();`;
+const themeBootstrap = `(function(){try{
+  var q=new URLSearchParams(location.search).get('theme');
+  var r=localStorage.getItem('sipedas:v5:settings');
+  var s=r?JSON.parse(r).theme:null;
+  var sys=window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';
+  var t=(q==='dark'||q==='light')?q:((s==='light'||s==='dark')?s:sys);
+  var light=t==='light';
+  var d=document.documentElement;
+  d.classList.toggle('light-mode',light);
+  d.style.colorScheme=light?'light':'dark';
+}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -89,6 +106,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className={`${inter.variable} ${bebasNeue.variable} ${greatVibes.variable}`}>
+        <ThemeFrameSync />
         {children}
       </body>
     </html>
