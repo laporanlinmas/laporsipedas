@@ -39,7 +39,7 @@ import { getCategoryBySlug, MAX_PHOTOS, type CategoryDef, type FlowKind } from '
 import { esc } from '@/lib/html';
 import { toDateInputValue } from '@/lib/format';
 import { preloadWatermarkLogo } from './watermark';
-import { applyThemeToDOM, getStoredTheme, saveStoredTheme } from '@/lib/theme';
+import { applyThemeToDOM, getStoredTheme, saveStoredTheme, setFrameThemeOverride, setManualTheme } from '@/lib/theme';
 
 const SETTINGS_KEY = 'sipedas:v5:settings';
 const SESSION_PREFIX = 'sipedas:v5:session:';
@@ -209,7 +209,11 @@ export function AppProvider({
     const run = ++bootstrapRun.current;
     const active = () => bootstrapRun.current === run;
 
-    setSettings(readSettings());
+    const initial = readSettings();
+    setSettings(initial);
+    // Idempoten: skrip bootstrap di <head> sudah memasang class yang sama,
+    // jadi DOM tidak berubah dan tidak ada kedipan.
+    applyThemeToDOM(initial.theme);
     preloadWatermarkLogo();
     setOnline(navigator.onLine);
 
@@ -272,14 +276,25 @@ export function AppProvider({
   }, [scope, flow, category.name]);
 
   /* ── Persistensi Tema & Tampilan ───────────────────────────────── */
-  useEffect(() => {
-    applyThemeToDOM(settings.theme);
-  }, [settings.theme]);
+  /*
+   * TEMA TIDAK lagi diterapkan lewat efek yang bergantung pada state.
+   *
+   * Alasannya: pada render pertama `settings.theme` masih bernilai bawaan
+   * ('dark') karena settings baru dibaca di browser. Menerapkannya saat
+   * itu membuat class tema dicabut lalu dipasang lagi — terlihat sebagai
+   * kilatan terang/gelap setiap kali halaman kategori dibuka.
+   *
+   * Sekarang tema diterapkan di tiga tempat yang pasti benar:
+   *   1. bootstrap awal (nilai settings yang sudah dibaca dari storage),
+   *   2. saat pengguna mengubah tema (updateSettings / toggleTheme),
+   *   3. saat sinkronisasi dari tab/jendela lain (event storage/themechange).
+   */
 
   // Sinkronkan bila tema diubah dari komponen lain (misal di halaman menu kategori)
   useEffect(() => {
     const handleSync = () => {
       const stored = getStoredTheme();
+      applyThemeToDOM(stored);
       setSettings(previous => (previous.theme !== stored ? { ...previous, theme: stored } : previous));
     };
     window.addEventListener('storage', handleSync);
@@ -370,7 +385,22 @@ export function AppProvider({
       const nextTheme = previous.theme === 'dark' ? 'light' : 'dark';
       applyThemeToDOM(nextTheme);
       saveStoredTheme(nextTheme);
+      // Pengguna memilih manual → override halaman induk dilepas dan
+      // Pilihan ini didahulukan di atas query param `?theme=`.
+      setFrameThemeOverride(null);
+      setManualTheme(nextTheme);
       window.dispatchEvent(new Event('themechange'));
+
+      /* Sinkron dua arah: beri tahu halaman induk (dashboard SIPEDAS)
+         supaya tema di sana ikut berubah saat tombol tema diklik di sini. */
+      try {
+        if (window.parent !== window) {
+          window.parent.postMessage({ type: 'SIPEDAS_THEME_CHANGE', theme: nextTheme }, '*');
+        }
+      } catch {
+        /* induk sudah ditutup — abaikan */
+      }
+
       return { ...previous, theme: nextTheme };
     });
   }, []);

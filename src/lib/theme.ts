@@ -15,6 +15,23 @@ export const SETTINGS_KEY = 'sipedas:v5:settings';
  */
 let frameThemeOverride: ThemeMode | null = null;
 
+/**
+ * Tema yang dipilih manual oleh pengguna di halaman ini (klik tombol
+ * light/dark).
+ *
+ * Ini harus menang atas query param `?theme=` — parameter itu hanya petunjuk
+ * awal dari halaman induk. Tanpa ini, setiap klik tombol di dalam iframe
+ * akan ditolak kembali oleh param: toggle mengubah tema, lalu sinkronisasi
+ * (`themechange`) membaca `getStoredTheme()` yang masih mengembalikan nilai
+ * param, sehingga tema langsung dikembalikan seperti tidak ada yang diklik.
+ */
+let manualTheme: ThemeMode | null = null;
+
+/** Tetapkan (atau lepaskan dengan `null`) tema pilihan manual pengguna. */
+export function setManualTheme(theme: ThemeMode | null): void {
+  manualTheme = theme;
+}
+
 /** Baca tema dari query param `?theme=`. */
 export function readThemeParam(): ThemeMode | null {
   if (typeof window === 'undefined') return null;
@@ -47,6 +64,7 @@ export function setFrameThemeOverride(theme: ThemeMode | null): void {
 export function getStoredTheme(): ThemeMode {
   if (typeof window === 'undefined') return 'dark';
   if (frameThemeOverride) return frameThemeOverride;
+  if (manualTheme) return manualTheme;
 
   const fromParam = readThemeParam();
   if (fromParam) return fromParam;
@@ -140,12 +158,25 @@ export function useTheme() {
   const toggleTheme = useCallback(() => {
     const nextTheme: ThemeMode = theme === 'dark' ? 'light' : 'dark';
     setTheme(nextTheme);
-    // Pilihan manual pengguna menang: override dari halaman induk dilepas dan
-    // tema disimpan permanen.
+    // Pilihan manual pengguna menang: override halaman induk dilepas, ditandai
+    // sebagai pilihan manual (menang atas `?theme=`), lalu disimpan permanen.
     setFrameThemeOverride(null);
+    setManualTheme(nextTheme);
     saveStoredTheme(nextTheme);
     applyThemeToDOM(nextTheme);
     window.dispatchEvent(new Event('themechange'));
+
+    /* Beri tahu halaman induk (dashboard SIPEDAS) supaya temanya ikut
+       berubah — sinkron dua arah. Tanpa ini, tema hanya bisa diatur dari
+       dashboard dan tombol tema di dalam aplikasi tidak berefek apa pun
+       pada jendela induk. */
+    try {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'SIPEDAS_THEME_CHANGE', theme: nextTheme }, '*');
+      }
+    } catch {
+      /* induk sudah ditutup — abaikan */
+    }
   }, [theme]);
 
   return { theme, toggleTheme, mounted };

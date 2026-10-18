@@ -728,6 +728,21 @@ svg {
   min-height: 100dvh;
   margin: 0 auto;
   padding: 0 max(18px, var(--safe-left)) calc(24px + var(--safe-bottom));
+  /* Transisi masuk yang halus saat berpindah dari menu kategori ke
+     halaman kategori. Hanya opacity — tanpa transform — supaya bar aksi
+     bawah (position: sticky) tidak ikut bergeser. */
+  animation: page-in 0.26s ease-out both;
+}
+
+@keyframes page-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell-inner {
+    animation: none;
+  }
 }
 
 .page-bar {
@@ -2164,26 +2179,42 @@ svg {
 
 /* ── 8. Bilah kirim ─────────────────────────────────────────────── */
 
+/* Bilah aksi bawah (kirim + reset).
+   • Latar gradient yang membentang FULL LEBAR dihapus — sudah ada motif
+     batik di belakang, jadi cukup pil kecil yang menempel di sekeliling
+     tombolnya.
+   • `pointer-events: none` pada bar supaya area kosongnya tidak pernah
+     menutupi peta/form; hanya pil tombolnya yang bisa diklik. */
 .submit-bar {
   position: sticky;
   bottom: 0;
   z-index: 30;
-  margin-top: 10px;
+  /* Dorong ke bawah agar posisinya stabil, tidak melompat-lompat. */
+  margin-top: auto;
   padding: 12px 0 calc(12px + var(--safe-bottom));
-  background: linear-gradient(to top, var(--navy) 62%, transparent);
+  background: none;
+  pointer-events: none;
 }
 
 .submit-inner {
-  display: flex;
+  display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 9px;
-  width: min(100%, 620px);
+  max-width: min(100%, 640px);
   margin: 0 auto;
+  padding: 7px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--card);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .32);
+  pointer-events: auto;
 }
 
 .btn-submit {
-  display: flex;
-  flex: 1;
+  display: inline-flex;
+  flex: 0 1 auto;
   align-items: center;
   justify-content: center;
   gap: 9px;
@@ -2264,9 +2295,9 @@ svg {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 8px;
-  width: min(100%, 620px);
+  max-width: min(100%, 640px);
   margin: 8px auto 0;
   color: var(--muted);
   font-size: 0.67rem;
@@ -3680,9 +3711,12 @@ svg {
     border-radius: 20px 20px 0 0;
   }
 
+  /* Di layar sempit pil tombol tetap menempel pada isinya, tidak melar
+     memenuhi lebar layar. */
   .submit-inner,
   .submit-hint {
-    width: 100%;
+    width: auto;
+    max-width: 100%;
   }
 }
 
